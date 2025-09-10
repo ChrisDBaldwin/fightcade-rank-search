@@ -238,17 +238,20 @@ The application includes several production-ready features:
 
 - Player data is stored as JSON files in the `data/` directory
 - Each game has its own file: `data/{gameId}-rankings.json`
-- Data includes: rank, name, ELO, wins, losses, win rate
+- Data includes: rank, name, ELO, total matches, time played, country, Fightcade tier rank
 - Files are automatically created when fetching data
+- For community scene management, see [documentation](SCENE_MANAGEMENT.md) for details
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and test them
+2. Create a feature branch: `git checkout -b feature/your-amazing-feature`
+3. Make your changes and test them locally. Ensure others can do the same.
 4. Commit: `git commit -m 'Add amazing feature'`
 5. Push: `git push origin feature/amazing-feature`
 6. Open a Pull Request
+7. We discuss
+8. Merge, reject, or ignore the PR
 
 ## 📝 License
 
@@ -256,8 +259,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgments
 
-- **Fightcade Community** for the amazing platform
-- **Claude Code** is pretty great
+- **Fightcade Devs & Community** for the amazing platform
+- **Claude Code** is pretty great at making websites fast
 - All the players who still play these old games!
 
 ## ⚠️ Disclaimer
