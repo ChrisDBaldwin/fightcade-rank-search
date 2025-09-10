@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ FC RANK SEARCH ⚡ - ARCADE WARRIORS DATABASE</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-fist-raised"></i>
+                <span class="logo-text">FC RANK</span>
+            </div>
+            <div class="nav-menu">
+                <button id="localSceneBtn" class="nav-btn active">
+                    <i class="fas fa-users"></i> Community
+                </button>
+                <button id="statsPageBtn" class="nav-btn">
+                    <i class="fas fa-chart-pie"></i> Statistics
+                </button>
+                <button id="mainPageBtn" class="nav-btn">
+                    <i class="fas fa-search"></i> Player Search
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+
+        <main class="main-content">
+            <!-- Statistics Page Content -->
+            <div id="statsPage" class="page-content hidden">
+                <!-- Statistics Header -->
+                <section class="stats-header">
+                    <h2><i class="fas fa-chart-pie"></i> Fightcade Statistics Dashboard</h2>
+                    <p>📊 Comprehensive insights into the global Fightcade fighting game community! 🌍</p>
+                    
+                    <!-- Game Selection for Stats -->
+                    <div class="stats-game-selection">
+                        <select id="statsGameSelect" class="game-select">
+                            <option value="">Select a game for statistics...</option>
+                        </select>
+                        <button id="loadStatsBtn" class="btn btn-primary" disabled>
+                            <i class="fas fa-chart-bar"></i> Load Statistics
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Global Overview Cards -->
+                <section id="globalOverviewSection" class="global-overview hidden">
+                    <h3><i class="fas fa-globe"></i> Global Overview</h3>
+                    <div class="overview-cards">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="totalPlayersCount">-</div>
+                                <div class="stat-label">Total Players</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-flag"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="totalCountriesCount">-</div>
+                                <div class="stat-label">Countries</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-crown"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="averageRank">-</div>
+                                <div class="stat-label">Avg. Tier</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-fire"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="totalMatches">-</div>
+                                <div class="stat-label">Total Matches</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Rank Distribution Section -->
+                <section id="rankDistributionSection" class="rank-distribution hidden">
+                    <h3><i class="fas fa-chart-pie"></i> Rank Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="rankPieChart" width="400" height="400"></canvas>
+                    </div>
+                    <div class="rank-legend">
+                        <div class="rank-item" data-rank="S">
+                            <div class="rank-color s-rank"></div>
+                            <span class="rank-label">S Tier (2000+ ELO)</span>
+                            <span class="rank-count" id="sRankCount">-</span>
+                        </div>
+                        <div class="rank-item" data-rank="A">
+                            <div class="rank-color a-rank"></div>
+                            <span class="rank-label">A Tier (1800-1999 ELO)</span>
+                            <span class="rank-count" id="aRankCount">-</span>
+                        </div>
+                        <div class="rank-item" data-rank="B">
+                            <div class="rank-color b-rank"></div>
+                            <span class="rank-label">B Tier (1600-1799 ELO)</span>
+                            <span class="rank-count" id="bRankCount">-</span>
+                        </div>
+                        <div class="rank-item" data-rank="C">
+                            <div class="rank-color c-rank"></div>
+                            <span class="rank-label">C Tier (1400-1599 ELO)</span>
+                            <span class="rank-count" id="cRankCount">-</span>
+                        </div>
+                        <div class="rank-item" data-rank="D">
+                            <div class="rank-color d-rank"></div>
+                            <span class="rank-label">D Tier (1200-1399 ELO)</span>
+                            <span class="rank-count" id="dRankCount">-</span>
+                        </div>
+                        <div class="rank-item" data-rank="E">
+                            <div class="rank-color e-rank"></div>
+                            <span class="rank-label">E Tier (1000-1199 ELO)</span>
+                            <span class="rank-count" id="eRankCount">-</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Country Statistics Section -->
+                <section id="countryStatsSection" class="country-stats hidden">
+                    <h3><i class="fas fa-globe-americas"></i> Top Countries</h3>
+                    <div class="country-tabs">
+                        <button class="country-tab active" data-tab="top-players">Top Players by Country</button>
+                        <button class="country-tab" data-tab="country-distribution">Player Distribution</button>
+                    </div>
+                    
+                    <div id="topPlayersByCountry" class="country-content">
+                        <div class="country-selector">
+                            <select id="countrySelector" class="country-select">
+                                <option value="">Select a country...</option>
+                            </select>
+                        </div>
+                        <div id="countryTopPlayers" class="country-top-players"></div>
+                    </div>
+                    
+                    <div id="countryDistribution" class="country-content hidden">
+                        <canvas id="countryChart" width="600" height="400"></canvas>
+                    </div>
+                </section>
+
+                <!-- Advanced Statistics Section -->
+                <section id="advancedStatsSection" class="advanced-stats hidden">
+                    <h3><i class="fas fa-analytics"></i> Advanced Analytics</h3>
+                    <div class="advanced-stats-grid">
+                        <div class="advanced-stat-card">
+                            <h4><i class="fas fa-clock"></i> Activity Insights</h4>
+                            <div class="stat-row">
+                                <span>Most Active Players (>1000 matches):</span>
+                                <span id="activePlayersCount">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Average Matches per Player:</span>
+                                <span id="avgMatchesPerPlayer">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Total Hours Played:</span>
+                                <span id="totalHoursPlayed">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="advanced-stat-card">
+                            <h4><i class="fas fa-trophy"></i> Elite Players</h4>
+                            <div class="stat-row">
+                                <span>S-Tier Players:</span>
+                                <span id="elitePlayerCount">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Countries with S-Tier:</span>
+                                <span id="eliteCountriesCount">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>Top Country by Elite %:</span>
+                                <span id="topEliteCountry">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Loading Spinner for Stats -->
+                <div id="statsLoadingSpinner" class="loading-spinner hidden">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Analyzing player data...</span>
+                </div>
+            </div>
+
+            <!-- Main Page Content -->
+            <div id="mainPage" class="page-content hidden">
+                <!-- Game Selection -->
+                <section class="game-selection">
+                <h2><i class="fas fa-gamepad"></i> Choose Your Game</h2>
+                <div class="game-controls">
+                    <select id="gameSelect" class="game-select">
+                        <option value="">Select a game...</option>
+                    </select>
+                    <button id="fetchDataBtn" class="btn btn-primary" disabled>
+                        <i class="fas fa-download"></i> Load Fighter Data
+                    </button>
+                    <button id="refreshGamesBtn" class="btn btn-secondary">
+                        <i class="fas fa-refresh"></i> Refresh Games
+                    </button>
+                </div>
+                <div id="gameInfo" class="game-info hidden"></div>
+            </section>
+
+            <!-- Search Section -->
+            <section id="searchSection" class="search-section hidden">
+                <h2><i class="fas fa-search"></i> Search Players</h2>
+                
+                <!-- Quick Search -->
+                <div class="quick-search">
+                    <input type="text" id="playerNameSearch" placeholder="Search player by name..." class="search-input">
+                    <button id="quickSearchBtn" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="advanced-filters">
+                    <button id="toggleFiltersBtn" class="btn btn-secondary">
+                        <i class="fas fa-filter"></i> Advanced Filters
+                    </button>
+                    
+                    <div id="filtersPanel" class="filters-panel hidden">
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label><i class="fas fa-globe"></i> Country</label>
+                                <select id="countryFilter" class="country-select">
+                                    <option value="">All Countries</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label><i class="fas fa-fire"></i> Power Level</label>
+                                <div class="range-inputs">
+                                    <input type="number" id="minElo" placeholder="Min Power">
+                                    <input type="number" id="maxElo" placeholder="Max Power">
+                                </div>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label><i class="fas fa-crown"></i> Rank Tier</label>
+                                <div class="range-inputs">
+                                    <select id="minRankTier" class="rank-tier-select">
+                                        <option value="">Min Tier</option>
+                                        <option value="E">E (1000-1199)</option>
+                                        <option value="D">D (1200-1399)</option>
+                                        <option value="C">C (1400-1599)</option>
+                                        <option value="B">B (1600-1799)</option>
+                                        <option value="A">A (1800-1999)</option>
+                                        <option value="S">S (2000+)</option>
+                                    </select>
+                                    <select id="maxRankTier" class="rank-tier-select">
+                                        <option value="">Max Tier</option>
+                                        <option value="E">E (1000-1199)</option>
+                                        <option value="D">D (1200-1399)</option>
+                                        <option value="C">C (1400-1599)</option>
+                                        <option value="B">B (1600-1799)</option>
+                                        <option value="A">A (1800-1999)</option>
+                                        <option value="S">S (2000+)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="filter-actions">
+                            <button id="applyFiltersBtn" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                            <button id="clearFiltersBtn" class="btn btn-secondary">
+                                <i class="fas fa-eraser"></i> Reset Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="results-section hidden">
+                <div class="results-header">
+                    <h2><i class="fas fa-list"></i> Results</h2>
+                    <div class="results-info">
+                        <span id="resultsCount">0 fighters found</span>
+                        <div class="page-size-control">
+                            <label>Show:</label>
+                            <select id="pageSizeSelect">
+                                <option value="25">25</option>
+                                <option value="50" selected>50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span>per page</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="playersTable" class="players-table"></div>
+                
+                <div id="pagination" class="pagination hidden"></div>
+            </section>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner hidden">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading...</span>
+            </div>
+
+            <!-- Top Players Section -->
+            <section id="topPlayersSection" class="top-players-section hidden">
+                <h2><i class="fas fa-crown"></i> Top 10 Players</h2>
+                <div id="topPlayersList" class="top-players-list"></div>
+            </section>
+
+            <!-- Game Stats Section -->
+            <section id="gameStatsSection" class="game-stats-section hidden">
+                <h2><i class="fas fa-chart-bar"></i> Game Statistics</h2>
+                <div id="gameStats" class="game-stats"></div>
+            </section>
+            </div>
+
+            <!-- Local Scene Page Content -->
+            <div id="localScenePage" class="page-content">
+                <section class="page-header">
+                    <h1><i class="fas fa-users"></i> Community Scenes</h1>
+                    <p class="page-subtitle">🏆 Curated fighting game communities from around the world! 🌍</p>
+                </section>
+
+                <!-- Scene Selection -->
+                <section class="scene-selection">
+                    <h3><i class="fas fa-list"></i> Choose a Scene</h3>
+                    <div class="scene-controls">
+                        <select id="sceneSelect" class="scene-select">
+                            <option value="">Select a community scene...</option>
+                        </select>
+                        <button id="refreshScenesBtn" class="btn btn-secondary">
+                            <i class="fas fa-refresh"></i> Refresh Scenes
+                        </button>
+                    </div>
+                    <div class="scene-info" id="sceneInfo">
+                        <p>Select a scene to view community rankings and stats</p>
+                    </div>
+                </section>
+
+                <!-- Scene Stats Overview -->
+                <section id="sceneStatsSection" class="scene-stats-overview hidden">
+                    <div class="stats-grid" id="sceneStatsGrid">
+                        <!-- Stats will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Scene Results -->
+                <section id="sceneResultsSection" class="scene-results hidden">
+                    <div class="scene-results-header">
+                        <h3><i class="fas fa-trophy"></i> <span id="sceneResultsTitle">Scene Rankings</span></h3>
+                        <div class="scene-summary" id="sceneSummary"></div>
+                    </div>
+                    
+                    <div id="sceneTable" class="scene-table"></div>
+                </section>
+
+                <!-- Scene Submission Info -->
+                <section class="scene-submission-info">
+                    <div class="submission-card">
+                        <h3><i class="fas fa-envelope"></i> Submit Your Scene</h3>
+                        <p>Want to see your local fighting game community featured here? 📧</p>
+                        <button id="showSubmissionInfoBtn" class="btn btn-accent">
+                            <i class="fas fa-info-circle"></i> How to Submit
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Submission Info Modal/Details -->
+                <section id="submissionInfoSection" class="submission-info hidden">
+                    <div class="submission-details">
+                        <h4><i class="fas fa-paper-plane"></i> Scene Submission Guidelines</h4>
+                        <div id="submissionInfoContent">
+                            <!-- Content will be loaded dynamically -->
+                        </div>
+                        <button id="hideSubmissionInfoBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Loading Spinner for Local Scene -->
+                <div id="sceneLoadingSpinner" class="loading-spinner hidden">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Loading scene data...</span>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>🥊 FORGED FOR THE ARCADE WARRIORS • POWERED BY <a href="https://www.fightcade.com" target="_blank">FIGHTCADE.COM</a> 🥊</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

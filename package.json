@@ -1,0 +1,32 @@
+{
+  "name": "fc-rank-search",
+  "version": "1.0.0",
+  "description": "A tool for finding accurate player rank from table of ranked players on Fightcade",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "fetch-data": "ts-node src/scripts/fetchRankings.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["fightcade", "ranking", "search", "gaming"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "fightcade-api": "^1.0.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/cors": "^2.8.17",
+    "@types/compression": "^1.7.5",
+    "typescript": "^5.3.2",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0"
+  }
+}
