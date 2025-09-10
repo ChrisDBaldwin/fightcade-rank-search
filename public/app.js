@@ -583,7 +583,7 @@ function displayTopPlayers(players) {
             <div class="player-info">
                 <h4><a href="https://www.fightcade.com/id/${encodeURIComponent(player.name)}" target="_blank" rel="noopener noreferrer">${escapeHtml(player.name)}</a></h4>
                 <div class="player-stats">
-                    ${player.elo} ELO • ${player.totalMatches || 0} Matches • ${player.country || 'Unknown'}
+                    ${player.elo} Power • ${player.totalMatches || 0} Matches • ${player.country || 'Unknown'}
                 </div>
             </div>
         </div>
@@ -660,19 +660,19 @@ function displayGameStats(stats) {
         </div>
         <div class="stat-card">
             <div class="stat-value">${stats.averageElo}</div>
-            <div class="stat-label">Average ELO</div>
+            <div class="stat-label">Average Power</div>
         </div>
         <div class="stat-card">
             <div class="stat-value">${stats.medianElo}</div>
-            <div class="stat-label">Median ELO</div>
+            <div class="stat-label">Median Power</div>
         </div>
         <div class="stat-card">
             <div class="stat-value">${stats.topElo}</div>
-            <div class="stat-label">Highest ELO</div>
+            <div class="stat-label">Highest Power</div>
         </div>
         <div class="stat-card">
             <div class="stat-value">${stats.bottomElo}</div>
-            <div class="stat-label">Lowest ELO</div>
+            <div class="stat-label">Lowest Power</div>
         </div>
     `;
     
@@ -1686,7 +1686,7 @@ function displayCountryTopPlayers(country) {
             <div class="player-info">
                 <div class="player-name">${escapeHtml(player.name)}</div>
                 <div class="player-stats">
-                    ${player.elo} ELO • ${player.totalMatches.toLocaleString()} matches • ${getRankTierName(player.fightcadeRank || 1)} Tier
+                    ${player.elo} Power • ${player.totalMatches.toLocaleString()} matches • ${getRankTierName(player.fightcadeRank || 1)} Tier
                 </div>
             </div>
         </div>
