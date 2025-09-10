@@ -62,15 +62,41 @@ npm run dev
 
 That's it! 🎉 You can now search through **thousands** of player rankings instantly.
 
+### 🐳 Docker Installation (Alternative)
+
+For easier deployment, you can use Docker:
+
+**Quick start with Docker Compose**:
+```bash
+git clone <repository-url>
+cd fc-rank-search
+docker-compose up -d
+```
+
+**Or build and run manually**:
+```bash
+# Build the image
+docker build -t fc-rank-search .
+
+# Run the container
+docker run -d \
+  --name fc-rank-search \
+  -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  fc-rank-search
+```
+
+The application will be available at `http://localhost:3000` with data persisted in the local `data/` directory.
+
 ### 🔥 What You Get
 
-- **6,700+ players** per game (vs. the original 15!) - that's **447x more data!**
-- **Complete ranking database** access with pagination breakthrough
-- **Instant search** through massive datasets
+- **Thousands of players** per game
+- **Complete ranking database** access allowing for pulling data from the Fightcade API
+- **Instant search** through all players of a game
 - **Advanced filtering** by rank, matches played, country, etc.
 - **Beautiful, responsive UI** that works on all devices
 
-> **🚀 Breakthrough Achievement**: We cracked Fightcade's pagination system to access **35,396 total players** (limited by API rate limits to ~6,700 per session)
+> **🚀 Breakthrough Achievement**: We cracked Fightcade's pagination system to access **35,396 total players** (note the API rate limits)
 
 ## 📖 Usage Guide
 
@@ -122,6 +148,7 @@ wsl npm run fetch-data sfiii3nr1  # Gets more players, continuing from where it 
 
 The tool also provides a REST API:
 
+- `GET /health` - Health check endpoint
 - `GET /api/games` - List available games
 - `POST /api/games/:gameId/fetch` - Fetch fresh data
 - `GET /api/games/:gameId` - Get game info and stats
@@ -150,11 +177,15 @@ fc-rank-search/
 ├── src/
 │   ├── types/           # TypeScript type definitions
 │   ├── services/        # Core business logic
-│   │   ├── dataFetcher.ts   # Fightcade API integration
-│   │   └── searchService.ts # Search and filtering logic
+│   │   ├── dataFetcher.ts       # Fightcade API integration
+│   │   ├── searchService.ts     # Search and filtering logic
+│   │   ├── sceneService.ts      # Scene analysis and submission tracking
+│   │   ├── playerCache.ts       # Player data caching system
+│   │   ├── statisticsService.ts # Game statistics and analytics
+│   │   └── fightcadeApiDirect.ts # Direct Fightcade API access
 │   ├── scripts/         # Utility scripts
 │   │   └── fetchRankings.ts # CLI data fetcher
-│   └── server.ts        # Express.js server
+│   └── server.ts        # Express.js server with security middleware
 ├── public/              # Web interface
 │   ├── index.html       # Main HTML page
 │   ├── styles.css       # Modern CSS styling
@@ -190,7 +221,18 @@ Create a `.env` file for custom configuration:
 ```env
 PORT=3000                    # Server port
 MAX_DATA_AGE_HOURS=24       # How long to cache data
+NODE_ENV=production         # Enable production optimizations
 ```
+
+### Production Features
+
+The application includes several production-ready features:
+
+- **Security**: Helmet.js for security headers and CORS protection
+- **Performance**: Compression middleware for smaller response sizes
+- **Health Checks**: `/health` endpoint for monitoring and load balancers
+- **Caching**: Intelligent player data caching with configurable TTL
+- **Docker**: Full containerization support with security best practices
 
 ### Data Storage
 
@@ -215,8 +257,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🙏 Acknowledgments
 
 - **Fightcade Community** for the amazing platform
-- **fightcade-api** library for easy API access
-- All the players who make these games competitive and fun!
+- **Claude Code** is pretty great
+- All the players who still play these old games!
 
 ## ⚠️ Disclaimer
 
