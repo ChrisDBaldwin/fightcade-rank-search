@@ -146,10 +146,7 @@ async function loadAvailableGames() {
             'sfa3': 'Street Fighter Alpha 3',
             'sf2ce': 'Street Fighter II Champion Edition',
             'kof98': 'King of Fighters 98',
-            'kof2002': 'King of Fighters 2002',
-            'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
-            'vsav': 'Vampire Savior',
-            'jojoba': 'JoJo\'s Bizarre Adventure: Heritage for the Future'
+            'kof2002': 'King of Fighters 2002'
         };
         
         data.games.forEach(gameId => {
@@ -221,10 +218,7 @@ async function fetchGameData() {
         'sfa3': 'Street Fighter Alpha 3',
         'sf2ce': 'Street Fighter II Champion Edition',
         'kof98': 'King of Fighters 98',
-        'kof2002': 'King of Fighters 2002',
-        'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
-        'vsav': 'Vampire Savior',
-        'jojoba': 'JoJo\'s Bizarre Adventure: Heritage for the Future'
+        'kof2002': 'King of Fighters 2002'
     };
 
     showLoading(true);
