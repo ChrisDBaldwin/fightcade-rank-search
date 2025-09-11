@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   fc-rank-search:
     build: .
@@ -21,6 +19,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - default
+      - web
     labels:
       # Labels for reverse proxy (adjust domain as needed)
       - "traefik.enable=true"
@@ -28,3 +29,7 @@ services:
       - "traefik.http.routers.fc-rank-search.entrypoints=websecure"
       - "traefik.http.routers.fc-rank-search.tls.certresolver=letsencrypt"
       - "traefik.http.services.fc-rank-search.loadbalancer.server.port=3000"
+
+networks:
+  web:
+    external: true
