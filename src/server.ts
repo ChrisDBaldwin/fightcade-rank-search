@@ -43,7 +43,12 @@ app.use(helmet({
         "https://fonts.gstatic.com",
         "https://cdnjs.cloudflare.com"
       ],
-      imgSrc: ["'self'", "data:", "https:"]
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: [
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://cdnjs.cloudflare.com"
+      ]
     }
   }
 }));
