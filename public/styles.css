@@ -74,6 +74,19 @@ body::before {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+.nav-logo.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.nav-logo.clickable:hover {
+    background: rgba(66, 153, 225, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
+}
+
 .nav-logo i {
     color: #f56565;
     font-size: 1.5rem;
@@ -86,6 +99,7 @@ body::before {
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
 
 .nav-menu {
     display: flex;
@@ -1674,19 +1688,22 @@ section h2 i {
     background: rgba(245, 101, 101, 0.1) !important;
 }
 
-/* Additional responsive styles for mobile */
-@media (max-width: 480px) {
+/* Mobile Navigation Improvements */
+@media (max-width: 768px) {
+    
     .nav-menu {
         flex-direction: column;
         position: absolute;
         top: 100%;
+        left: 20px;
         right: 20px;
         background: linear-gradient(135deg, #1a1f35 0%, #2d3748 100%);
         border: 2px solid #4299e1;
         border-radius: 8px;
-        padding: 10px;
+        padding: 15px;
         display: none;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
     }
     
     .nav-menu.active {
@@ -1694,29 +1711,36 @@ section h2 i {
         gap: 8px;
     }
     
-    .mobile-menu-toggle {
-        display: block;
-        background: none;
-        border: 2px solid #4299e1;
-        color: #4299e1;
-        padding: 8px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 18px;
+    .nav-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 18px;
+        font-size: 14px;
+    }
+    
+    /* Scene controls mobile fixes */
+    .scene-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .scene-select {
+        min-width: unset;
+        width: 100%;
     }
     
     .container {
         min-height: calc(100vh - 60px);
     }
 }
-    
-    .scene-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
+
+/* Additional mobile responsive styles */
+@media (max-width: 480px) {
     .player-management {
         justify-content: stretch;
+        flex-direction: column;
+        gap: 10px;
     }
     
     .add-player-input {
