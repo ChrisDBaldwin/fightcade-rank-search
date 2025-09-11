@@ -263,7 +263,6 @@ async function fetchGameData() {
         const data = await response.json();
         
         if (response.ok) {
-            showMessage(`⚡ Successfully loaded ${data.gameData.totalPlayers} fighters! ⚡`, 'success');
             // Reload game data
             onGameSelect();
         } else {
@@ -920,7 +919,6 @@ async function loadSceneData(useHybridData = true) {
             if (response.ok) {
                 displayHybridSceneResults(data);
                 const { stats } = data;
-                showMessage(`🧠 Hybrid data loaded! ${stats.cachedData} cached + ${stats.liveData} live updates ⚡`, 'success');
             } else {
                 console.warn('❌ Hybrid data failed, trying live data:', data.error);
                 // Fallback to pure live data
@@ -1557,7 +1555,6 @@ async function loadStatistics() {
         
         showStatsSections();
         
-        showMessage(`Statistics loaded for ${statsGameSelect.options[statsGameSelect.selectedIndex].text}! 📊`, 'success');
         
     } catch (error) {
         console.error('Error loading statistics:', error);
