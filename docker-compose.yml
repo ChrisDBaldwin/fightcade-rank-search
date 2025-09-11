@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  fc-rank-search:
+    build: .
+    container_name: fc-rank-search-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # using port 3000 on the host machine
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      # Persist data directory for cached rankings
+      - ./data:/app/data
+      # Optional: Mount logs directory
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      # Labels for reverse proxy (adjust domain as needed)
+      - "traefik.enable=true"
+      - "traefik.http.routers.fc-rank-search.rule=Host(`fc-rank.voidtalker.com`)"
+      - "traefik.http.routers.fc-rank-search.entrypoints=websecure"
+      - "traefik.http.routers.fc-rank-search.tls.certresolver=letsencrypt"
+      - "traefik.http.services.fc-rank-search.loadbalancer.server.port=3000"
