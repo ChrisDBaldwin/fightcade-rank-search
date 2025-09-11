@@ -30,6 +30,10 @@ const statsPage = document.getElementById('statsPage');
 const mainPage = document.getElementById('mainPage');
 const localScenePage = document.getElementById('localScenePage');
 
+// Mobile navigation elements
+const navLogo = document.getElementById('navLogo');
+const navMenu = document.getElementById('navMenu');
+
 // Scene elements
 const sceneSelect = document.getElementById('sceneSelect');
 const refreshScenesBtn = document.getElementById('refreshScenesBtn');
@@ -67,9 +71,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeEventListeners() {
     // Navigation
-    statsPageBtn.addEventListener('click', showStatsPage);
-    mainPageBtn.addEventListener('click', showMainPage);
-    localSceneBtn.addEventListener('click', showLocalScenePage);
+    statsPageBtn.addEventListener('click', () => {
+        showStatsPage();
+        closeMobileMenu();
+    });
+    mainPageBtn.addEventListener('click', () => {
+        showMainPage();
+        closeMobileMenu();
+    });
+    localSceneBtn.addEventListener('click', () => {
+        showLocalScenePage();
+        closeMobileMenu();
+    });
+    
+    // Mobile navigation
+    navLogo.addEventListener('click', toggleMobileMenu);
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!navMenu.contains(e.target) && 
+            !navLogo.contains(e.target)) {
+            closeMobileMenu();
+        }
+    });
     
     // Statistics
     statsGameSelect.addEventListener('change', onStatsGameSelect);
@@ -729,6 +753,15 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    navMenu.classList.toggle('active');
+}
+
+function closeMobileMenu() {
+    navMenu.classList.remove('active');
 }
 
 // Navigation Functions

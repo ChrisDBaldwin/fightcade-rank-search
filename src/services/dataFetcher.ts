@@ -120,7 +120,7 @@ export class DataFetcher {
     }
   }
 
-  isDataStale(gameData: GameData, maxAgeHours: number = 24): boolean {
+  isDataStale(gameData: GameData, maxAgeHours: number = 168): boolean {
     const lastUpdate = new Date(gameData.lastUpdated);
     const now = new Date();
     const ageHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
