@@ -3,7 +3,7 @@ let currentGame = null;
 let currentPage = 1;
 let currentPageSize = 50;
 let currentFilters = {};
-let currentView = 'localScene'; // 'stats', 'main' or 'localScene'
+let currentView = 'home'; // 'home', 'stats', 'main' or 'localScene'
 let currentScene = null;
 let availableScenes = [];
 let sceneStats = null;
@@ -23,9 +23,11 @@ const gameStatsSection = document.getElementById('gameStatsSection');
 const loadingSpinner = document.getElementById('loadingSpinner');
 
 // Navigation elements
+const homePageBtn = document.getElementById('homePageBtn');
 const statsPageBtn = document.getElementById('statsPageBtn');
 const mainPageBtn = document.getElementById('mainPageBtn');
 const localSceneBtn = document.getElementById('localSceneBtn');
+const homePage = document.getElementById('homePage');
 const statsPage = document.getElementById('statsPage');
 const mainPage = document.getElementById('mainPage');
 const localScenePage = document.getElementById('localScenePage');
@@ -65,12 +67,17 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     loadAvailableGames();
     initializeStatisticsPage();
-    // Load community scenes on startup since it's the default view
-    loadAvailableScenes();
+    initializeHomePage();
+    // Start on homepage
+    showHomePage();
 });
 
 function initializeEventListeners() {
     // Navigation
+    homePageBtn.addEventListener('click', () => {
+        showHomePage();
+        closeMobileMenu();
+    });
     statsPageBtn.addEventListener('click', () => {
         showStatsPage();
         closeMobileMenu();
@@ -195,6 +202,198 @@ async function loadAvailableGames() {
         showMessage('Error loading available games', 'error');
     }
     showLoading(false);
+}
+
+// Homepage Functions
+async function initializeHomePage() {
+    // Initialize hero search elements
+    const heroPlayerSearch = document.getElementById('heroPlayerSearch');
+    const heroGameSelect = document.getElementById('heroGameSelect');
+    const heroSearchBtn = document.getElementById('heroSearchBtn');
+    
+    // Quick action buttons
+    const browseTopPlayersBtn = document.getElementById('browseTopPlayersBtn');
+    const viewStatisticsBtn = document.getElementById('viewStatisticsBtn');
+    const exploreCommunityBtn = document.getElementById('exploreCommunityBtn');
+
+    if (!heroPlayerSearch || !heroGameSelect || !heroSearchBtn) return;
+
+    // Load games for hero game selector
+    await loadHeroGameSelector();
+    
+    // Event listeners for hero search
+    heroGameSelect.addEventListener('change', () => {
+        heroSearchBtn.disabled = !heroGameSelect.value;
+    });
+    
+    heroSearchBtn.addEventListener('click', performHeroSearch);
+    heroPlayerSearch.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performHeroSearch();
+        }
+    });
+
+    // Quick action button listeners
+    if (browseTopPlayersBtn) {
+        browseTopPlayersBtn.addEventListener('click', () => {
+            showMainPage();
+            // Focus on game selection if no game is selected
+            if (!currentGame) {
+                gameSelect.focus();
+            }
+        });
+    }
+
+    if (viewStatisticsBtn) {
+        viewStatisticsBtn.addEventListener('click', () => {
+            showStatsPage();
+        });
+    }
+
+    if (exploreCommunityBtn) {
+        exploreCommunityBtn.addEventListener('click', () => {
+            showLocalScenePage();
+        });
+    }
+
+    // Load and display featured games
+    await loadFeaturedGames();
+}
+
+async function loadHeroGameSelector() {
+    try {
+        const response = await fetch('/api/games');
+        const data = await response.json();
+        
+        const heroGameSelect = document.getElementById('heroGameSelect');
+        if (!heroGameSelect) return;
+        
+        heroGameSelect.innerHTML = '<option value="">Select a game...</option>';
+        
+        const gameNames = {
+            'sfiii3nr1': 'Street Fighter III: 3rd Strike',
+            'sfa3': 'Street Fighter Alpha 3',
+            'sf2ce': 'Street Fighter II Champion Edition',
+            'kof98': 'King of Fighters 98',
+            'kof2002': 'King of Fighters 2002',
+            'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
+            'vsav': 'Vampire Savior',
+            'jojoba': "JoJo's Bizarre Adventure"
+        };
+        
+        data.games.forEach(gameId => {
+            const option = document.createElement('option');
+            option.value = gameId;
+            option.textContent = gameNames[gameId] || gameId;
+            heroGameSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading hero game selector:', error);
+    }
+}
+
+async function loadFeaturedGames() {
+    try {
+        const response = await fetch('/api/games');
+        const data = await response.json();
+        
+        const homeGameGrid = document.getElementById('homeGameGrid');
+        if (!homeGameGrid) return;
+        
+        const gameNames = {
+            'sfiii3nr1': 'Street Fighter III: 3rd Strike',
+            'sfa3': 'Street Fighter Alpha 3', 
+            'sf2ce': 'Street Fighter II Champion Edition',
+            'kof98': 'King of Fighters 98',
+            'kof2002': 'King of Fighters 2002',
+            'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
+            'vsav': 'Vampire Savior',
+            'jojoba': "JoJo's Bizarre Adventure"
+        };
+
+        const gameIcons = {
+            'sfiii3nr1': 'fas fa-fist-raised',
+            'sfa3': 'fas fa-fire',
+            'sf2ce': 'fas fa-bolt',
+            'kof98': 'fas fa-crown',
+            'kof2002': 'fas fa-star',
+            'ggxxacpr': 'fas fa-sword',
+            'vsav': 'fas fa-moon',
+            'jojoba': 'fas fa-gem'
+        };
+        
+        homeGameGrid.innerHTML = '';
+        
+        // Show up to 6 games
+        const gamesToShow = data.games.slice(0, 6);
+        
+        for (const gameId of gamesToShow) {
+            const gameCard = document.createElement('div');
+            gameCard.className = 'game-card';
+            gameCard.innerHTML = `
+                <div class="game-icon">
+                    <i class="${gameIcons[gameId] || 'fas fa-gamepad'}"></i>
+                </div>
+                <div class="game-name">${gameNames[gameId] || gameId}</div>
+                <div class="game-action">
+                    <button class="game-select-btn" data-game="${gameId}">
+                        <i class="fas fa-search"></i> Search Players
+                    </button>
+                </div>
+            `;
+            
+            // Add click listener to game card
+            gameCard.addEventListener('click', () => {
+                selectGameAndNavigate(gameId);
+            });
+            
+            homeGameGrid.appendChild(gameCard);
+        }
+    } catch (error) {
+        console.error('Error loading featured games:', error);
+    }
+}
+
+function selectGameAndNavigate(gameId) {
+    // Set the game in the main game selector
+    gameSelect.value = gameId;
+    currentGame = gameId;
+    
+    // Navigate to main page
+    showMainPage();
+    
+    // Trigger game selection to load data
+    onGameSelect();
+}
+
+async function performHeroSearch() {
+    const heroPlayerSearch = document.getElementById('heroPlayerSearch');
+    const heroGameSelect = document.getElementById('heroGameSelect');
+    
+    if (!heroPlayerSearch || !heroGameSelect) return;
+    
+    const searchTerm = heroPlayerSearch.value.trim();
+    const selectedGame = heroGameSelect.value;
+    
+    if (!searchTerm || !selectedGame) {
+        showMessage('Please enter a player name and select a game', 'error');
+        return;
+    }
+    
+    // Set the game and search term in main page
+    gameSelect.value = selectedGame;
+    currentGame = selectedGame;
+    
+    // Navigate to main page
+    showMainPage();
+    
+    // Set search term and perform search
+    const playerNameSearch = document.getElementById('playerNameSearch');
+    if (playerNameSearch) {
+        playerNameSearch.value = searchTerm;
+        // Trigger the search
+        setTimeout(() => performQuickSearch(), 100);
+    }
 }
 
 async function onGameSelect() {
@@ -764,13 +963,29 @@ function closeMobileMenu() {
 }
 
 // Navigation Functions
+function showHomePage() {
+    currentView = 'home';
+    homePage.classList.remove('hidden');
+    statsPage.classList.add('hidden');
+    mainPage.classList.add('hidden');
+    localScenePage.classList.add('hidden');
+    
+    // Update nav buttons
+    homePageBtn.classList.add('active');
+    statsPageBtn.classList.remove('active');
+    mainPageBtn.classList.remove('active');
+    localSceneBtn.classList.remove('active');
+}
+
 function showStatsPage() {
     currentView = 'stats';
+    homePage.classList.add('hidden');
     statsPage.classList.remove('hidden');
     mainPage.classList.add('hidden');
     localScenePage.classList.add('hidden');
     
     // Update nav buttons
+    homePageBtn.classList.remove('active');
     statsPageBtn.classList.add('active');
     mainPageBtn.classList.remove('active');
     localSceneBtn.classList.remove('active');
@@ -778,11 +993,13 @@ function showStatsPage() {
 
 function showMainPage() {
     currentView = 'main';
+    homePage.classList.add('hidden');
     statsPage.classList.add('hidden');
     mainPage.classList.remove('hidden');
     localScenePage.classList.add('hidden');
     
     // Update nav buttons
+    homePageBtn.classList.remove('active');
     statsPageBtn.classList.remove('active');
     mainPageBtn.classList.add('active');
     localSceneBtn.classList.remove('active');
@@ -790,11 +1007,13 @@ function showMainPage() {
 
 function showLocalScenePage() {
     currentView = 'localScene';
+    homePage.classList.add('hidden');
     statsPage.classList.add('hidden');
     mainPage.classList.add('hidden');
     localScenePage.classList.remove('hidden');
     
     // Update nav buttons
+    homePageBtn.classList.remove('active');
     statsPageBtn.classList.remove('active');
     mainPageBtn.classList.remove('active');
     localSceneBtn.classList.add('active');

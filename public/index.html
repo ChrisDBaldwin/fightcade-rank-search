@@ -17,14 +17,17 @@
                 <span class="logo-text">FC RANK</span>
             </div>
             <div class="nav-menu" id="navMenu">
-                <button id="localSceneBtn" class="nav-btn active">
-                    <i class="fas fa-users"></i> Community
+                <button id="homePageBtn" class="nav-btn active">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <button id="mainPageBtn" class="nav-btn">
+                    <i class="fas fa-search"></i> Player Search
                 </button>
                 <button id="statsPageBtn" class="nav-btn">
                     <i class="fas fa-chart-pie"></i> Statistics
                 </button>
-                <button id="mainPageBtn" class="nav-btn">
-                    <i class="fas fa-search"></i> Player Search
+                <button id="localSceneBtn" class="nav-btn">
+                    <i class="fas fa-users"></i> Community
                 </button>
             </div>
         </div>
@@ -33,6 +36,80 @@
     <div class="container">
 
         <main class="main-content">
+            <!-- Homepage Content -->
+            <div id="homePage" class="page-content">
+                <!-- Hero Section -->
+                <section class="hero-section">
+                    <div class="hero-content">
+                        <h1 class="hero-title">
+                            <i class="fas fa-fist-raised hero-icon"></i>
+                            Find Any Fightcade Player
+                            <span class="hero-highlight">Instantly</span>
+                        </h1>
+                        <p class="hero-subtitle">
+                            🚀 Search through <strong>35,000+</strong> ranked fighters across multiple classic arcade games
+                        </p>
+                        
+                        <!-- Quick Search Bar -->
+                        <div class="hero-search">
+                            <div class="search-container">
+                                <input type="text" id="heroPlayerSearch" placeholder="Enter player name..." class="hero-search-input">
+                                <select id="heroGameSelect" class="hero-game-select">
+                                    <option value="">Select a game...</option>
+                                </select>
+                                <button id="heroSearchBtn" class="hero-search-btn" disabled>
+                                    <i class="fas fa-search"></i> Search Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Stats Section -->
+                <section class="quick-stats">
+                    <div class="stat-cards">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalPlayersHome">35,000+</div>
+                            <div class="stat-label">Players Indexed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalGamesHome">8</div>
+                            <div class="stat-label">Games Supported</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalCountriesHome">50+</div>
+                            <div class="stat-label">Countries</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Featured Games Section -->
+                <section class="featured-games">
+                    <h2><i class="fas fa-gamepad"></i> Popular Games</h2>
+                    <div class="game-grid" id="homeGameGrid">
+                        <!-- Game cards will be populated dynamically -->
+                    </div>
+                </section>
+
+                <!-- Quick Actions -->
+                <section class="quick-actions">
+                    <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                    <div class="action-buttons">
+                        <button class="action-btn" id="browseTopPlayersBtn">
+                            <i class="fas fa-crown"></i>
+                            <span>Browse Top Players</span>
+                        </button>
+                        <button class="action-btn" id="viewStatisticsBtn">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>View Game Statistics</span>
+                        </button>
+                        <button class="action-btn" id="exploreCommunityBtn">
+                            <i class="fas fa-users"></i>
+                            <span>Explore Community Scenes</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
             <!-- Statistics Page Content -->
             <div id="statsPage" class="page-content hidden">
                 <!-- Statistics Header -->
@@ -328,7 +405,7 @@
             </div>
 
             <!-- Local Scene Page Content -->
-            <div id="localScenePage" class="page-content">
+            <div id="localScenePage" class="page-content hidden">
                 <section class="page-header">
                     <h1><i class="fas fa-users"></i> Community Scenes</h1>
                     <p class="page-subtitle">🏆 Curated fighting game communities from around the world! 🌍</p>
