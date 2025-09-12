@@ -781,7 +781,7 @@ section h2 i {
     gap: 20px;
 }
 
-.stat-card {
+.game-stats .stat-card {
     background: #f7fafc;
     padding: 20px;
     border-radius: 12px;
@@ -790,7 +790,7 @@ section h2 i {
     transition: transform 0.3s ease;
 }
 
-.stat-card:hover {
+.game-stats .stat-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
