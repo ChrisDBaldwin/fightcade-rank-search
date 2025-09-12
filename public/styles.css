@@ -1892,6 +1892,34 @@ section h2 i {
     flex-wrap: wrap;
 }
 
+.game-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #4a5568;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    color: #e2e8f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.game-select:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    transform: translateY(-1px);
+    color: #f7fafc;
+}
+
+.game-select option {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 8px;
+}
+
 .stats-game-selection .game-select {
     min-width: 250px;
 }
