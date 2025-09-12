@@ -1936,7 +1936,7 @@ section h2 i {
     margin-top: 20px;
 }
 
-.stat-card {
+.overview-cards .stat-card {
     background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(159, 122, 234, 0.1) 100%);
     border: 2px solid #4299e1;
     border-radius: 12px;
@@ -1949,7 +1949,7 @@ section h2 i {
     overflow: hidden;
 }
 
-.stat-card::before {
+.overview-cards .stat-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -1959,7 +1959,7 @@ section h2 i {
     background: linear-gradient(90deg, #4299e1, #9f7aea, #f56565);
 }
 
-.stat-card:hover {
+.overview-cards .stat-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(66, 153, 225, 0.3);
     border-color: #63b3ed;
@@ -2228,7 +2228,7 @@ section h2 i {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
     
-    .stat-card {
+    .overview-cards .stat-card {
         flex-direction: column;
         text-align: center;
         gap: 10px;
@@ -2460,7 +2460,7 @@ section h2 i {
     margin: 0 auto;
 }
 
-.stat-card {
+.stat-cards .stat-card {
     background: linear-gradient(135deg, rgba(45, 55, 72, 0.9) 0%, rgba(74, 85, 104, 0.9) 100%);
     border: 2px solid #718096;
     border-radius: 12px;
@@ -2471,7 +2471,7 @@ section h2 i {
     overflow: hidden;
 }
 
-.stat-card::before {
+.stat-cards .stat-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -2482,17 +2482,17 @@ section h2 i {
     transition: left 0.5s ease;
 }
 
-.stat-card:hover {
+.stat-cards .stat-card:hover {
     border-color: #4299e1;
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(66, 153, 225, 0.3);
 }
 
-.stat-card:hover::before {
+.stat-cards .stat-card:hover::before {
     left: 100%;
 }
 
-.stat-number {
+.stat-cards .stat-number {
     font-family: 'Press Start 2P', monospace;
     font-size: 2rem;
     color: #f56565;
@@ -2500,7 +2500,7 @@ section h2 i {
     text-shadow: 0 0 10px rgba(245, 101, 101, 0.5);
 }
 
-.stat-label {
+.stat-cards .stat-label {
     font-size: 1.1rem;
     color: #cbd5e0;
     font-weight: 500;
