@@ -3,7 +3,7 @@ let currentGame = null;
 let currentPage = 1;
 let currentPageSize = 50;
 let currentFilters = {};
-let currentView = 'localScene'; // 'stats', 'main' or 'localScene'
+let currentView = 'home'; // 'home', 'stats', 'main' or 'localScene'
 let currentScene = null;
 let availableScenes = [];
 let sceneStats = null;
@@ -12,9 +12,7 @@ let rankChart = null;
 let countryChart = null;
 
 // DOM elements
-const gameSelect = document.getElementById('gameSelect');
-const fetchDataBtn = document.getElementById('fetchDataBtn');
-const refreshGamesBtn = document.getElementById('refreshGamesBtn');
+const gameCardsContainer = document.getElementById('gameCardsContainer');
 const gameInfo = document.getElementById('gameInfo');
 const searchSection = document.getElementById('searchSection');
 const resultsSection = document.getElementById('resultsSection');
@@ -23,9 +21,11 @@ const gameStatsSection = document.getElementById('gameStatsSection');
 const loadingSpinner = document.getElementById('loadingSpinner');
 
 // Navigation elements
+const homePageBtn = document.getElementById('homePageBtn');
 const statsPageBtn = document.getElementById('statsPageBtn');
 const mainPageBtn = document.getElementById('mainPageBtn');
 const localSceneBtn = document.getElementById('localSceneBtn');
+const homePage = document.getElementById('homePage');
 const statsPage = document.getElementById('statsPage');
 const mainPage = document.getElementById('mainPage');
 const localScenePage = document.getElementById('localScenePage');
@@ -65,12 +65,17 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     loadAvailableGames();
     initializeStatisticsPage();
-    // Load community scenes on startup since it's the default view
-    loadAvailableScenes();
+    initializeHomePage();
+    // Start on homepage
+    showHomePage();
 });
 
 function initializeEventListeners() {
     // Navigation
+    homePageBtn.addEventListener('click', () => {
+        showHomePage();
+        closeMobileMenu();
+    });
     statsPageBtn.addEventListener('click', () => {
         showStatsPage();
         closeMobileMenu();
@@ -107,10 +112,7 @@ function initializeEventListeners() {
         });
     });
     
-    // Game selection
-    gameSelect.addEventListener('change', onGameSelect);
-    fetchDataBtn.addEventListener('click', fetchGameData);
-    refreshGamesBtn.addEventListener('click', loadAvailableGames);
+    // Game selection - no longer needed since we'll use click events on cards
     
     // Scenes
     sceneSelect.addEventListener('change', onSceneSelect);
@@ -161,34 +163,69 @@ async function loadAvailableGames() {
         const response = await fetch('/api/games');
         const data = await response.json();
         
-        // Clear and populate game select
-        gameSelect.innerHTML = '<option value="">Select a game...</option>';
+        // Clear and populate game cards
+        gameCardsContainer.innerHTML = '';
         
-        // Popular games with display names
+        // Popular games with display names and icons
         const gameNames = {
             'sfiii3nr1': 'Street Fighter III: 3rd Strike',
             'sfa3': 'Street Fighter Alpha 3',
             'sf2ce': 'Street Fighter II Champion Edition',
             'kof98': 'King of Fighters 98',
-            'kof2002': 'King of Fighters 2002'
+            'kof2002': 'King of Fighters 2002',
+            'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
+            'vsav': 'Vampire Savior',
+            'jojoba': "JoJo's Bizarre Adventure"
+        };
+
+        const gameIcons = {
+            'sfiii3nr1': 'fas fa-fist-raised',
+            'sfa3': 'fas fa-fire',
+            'sf2ce': 'fas fa-bolt',
+            'kof98': 'fas fa-crown',
+            'kof2002': 'fas fa-star',
+            'ggxxacpr': 'fas fa-sword',
+            'vsav': 'fas fa-moon',
+            'jojoba': 'fas fa-gem'
         };
         
-        data.games.forEach(gameId => {
-            const option = document.createElement('option');
-            option.value = gameId;
-            option.textContent = gameNames[gameId] || gameId;
-            gameSelect.appendChild(option);
-        });
-
-        // Set Street Fighter III: 3rd Strike as default if available
-        if (data.games.includes('sfiii3nr1')) {
-            gameSelect.value = 'sfiii3nr1';
-            // Trigger the change event to enable the fetch button
-            gameSelect.dispatchEvent(new Event('change'));
+        if (data.games.length === 0) {
+            gameCardsContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-gamepad" style="font-size: 3rem; color: #4299e1; margin-bottom: 20px;"></i>
+                    <h3>No Games Available</h3>
+                    <p>Game data needs to be loaded by an administrator.</p>
+                </div>
+            `;
+            return;
         }
 
-        if (data.games.length === 0) {
-            gameSelect.innerHTML = '<option value="">No games available - fetch some data first!</option>';
+        data.games.forEach(gameId => {
+            const gameCard = document.createElement('div');
+            gameCard.className = 'game-card-main';
+            gameCard.innerHTML = `
+                <div class="game-card-icon">
+                    <i class="${gameIcons[gameId] || 'fas fa-gamepad'}"></i>
+                </div>
+                <div class="game-card-name">${gameNames[gameId] || gameId}</div>
+                <div class="game-card-action">
+                    <button class="game-card-btn" data-game="${gameId}">
+                        <i class="fas fa-play"></i> Select Game
+                    </button>
+                </div>
+            `;
+            
+            // Add click listener to game card
+            gameCard.addEventListener('click', () => {
+                selectGame(gameId);
+            });
+            
+            gameCardsContainer.appendChild(gameCard);
+        });
+
+        // Auto-select Street Fighter III: 3rd Strike if available
+        if (data.games.includes('sfiii3nr1')) {
+            selectGame('sfiii3nr1');
         }
     } catch (error) {
         console.error('Error loading games:', error);
@@ -197,17 +234,221 @@ async function loadAvailableGames() {
     showLoading(false);
 }
 
+function selectGame(gameId) {
+    currentGame = gameId;
+    
+    // Update visual selection
+    const allCards = gameCardsContainer.querySelectorAll('.game-card-main');
+    allCards.forEach(card => card.classList.remove('selected'));
+    
+    const selectedCard = gameCardsContainer.querySelector(`[data-game="${gameId}"]`)?.closest('.game-card-main');
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
+    }
+    
+    // Load game data
+    onGameSelect();
+}
+
+// Homepage Functions
+async function initializeHomePage() {
+    // Initialize hero search elements
+    const heroPlayerSearch = document.getElementById('heroPlayerSearch');
+    const heroGameSelect = document.getElementById('heroGameSelect');
+    const heroSearchBtn = document.getElementById('heroSearchBtn');
+    
+    // Quick action buttons
+    const browseTopPlayersBtn = document.getElementById('browseTopPlayersBtn');
+    const viewStatisticsBtn = document.getElementById('viewStatisticsBtn');
+    const exploreCommunityBtn = document.getElementById('exploreCommunityBtn');
+
+    if (!heroPlayerSearch || !heroGameSelect || !heroSearchBtn) return;
+
+    // Load games for hero game selector
+    await loadHeroGameSelector();
+    
+    // Event listeners for hero search
+    heroGameSelect.addEventListener('change', () => {
+        heroSearchBtn.disabled = !heroGameSelect.value;
+    });
+    
+    heroSearchBtn.addEventListener('click', performHeroSearch);
+    heroPlayerSearch.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performHeroSearch();
+        }
+    });
+
+    // Quick action button listeners
+    if (browseTopPlayersBtn) {
+        browseTopPlayersBtn.addEventListener('click', () => {
+            showMainPage();
+            // Focus on game selection if no game is selected
+            if (!currentGame) {
+                gameSelect.focus();
+            }
+        });
+    }
+
+    if (viewStatisticsBtn) {
+        viewStatisticsBtn.addEventListener('click', () => {
+            showStatsPage();
+        });
+    }
+
+    if (exploreCommunityBtn) {
+        exploreCommunityBtn.addEventListener('click', () => {
+            showLocalScenePage();
+        });
+    }
+
+    // Load and display featured games
+    await loadFeaturedGames();
+}
+
+async function loadHeroGameSelector() {
+    try {
+        const response = await fetch('/api/games');
+        const data = await response.json();
+        
+        const heroGameSelect = document.getElementById('heroGameSelect');
+        if (!heroGameSelect) return;
+        
+        heroGameSelect.innerHTML = '<option value="">Select a game...</option>';
+        
+        const gameNames = {
+            'sfiii3nr1': 'Street Fighter III: 3rd Strike',
+            'sfa3': 'Street Fighter Alpha 3',
+            'sf2ce': 'Street Fighter II Champion Edition',
+            'kof98': 'King of Fighters 98',
+            'kof2002': 'King of Fighters 2002',
+            'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
+            'vsav': 'Vampire Savior',
+            'jojoba': "JoJo's Bizarre Adventure"
+        };
+        
+        data.games.forEach(gameId => {
+            const option = document.createElement('option');
+            option.value = gameId;
+            option.textContent = gameNames[gameId] || gameId;
+            heroGameSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading hero game selector:', error);
+    }
+}
+
+async function loadFeaturedGames() {
+    try {
+        const response = await fetch('/api/games');
+        const data = await response.json();
+        
+        const homeGameGrid = document.getElementById('homeGameGrid');
+        if (!homeGameGrid) return;
+        
+        const gameNames = {
+            'sfiii3nr1': 'Street Fighter III: 3rd Strike',
+            'sfa3': 'Street Fighter Alpha 3', 
+            'sf2ce': 'Street Fighter II Champion Edition',
+            'kof98': 'King of Fighters 98',
+            'kof2002': 'King of Fighters 2002',
+            'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
+            'vsav': 'Vampire Savior',
+            'jojoba': "JoJo's Bizarre Adventure"
+        };
+
+        const gameIcons = {
+            'sfiii3nr1': 'fas fa-fist-raised',
+            'sfa3': 'fas fa-fire',
+            'sf2ce': 'fas fa-bolt',
+            'kof98': 'fas fa-crown',
+            'kof2002': 'fas fa-star',
+            'ggxxacpr': 'fas fa-sword',
+            'vsav': 'fas fa-moon',
+            'jojoba': 'fas fa-gem'
+        };
+        
+        homeGameGrid.innerHTML = '';
+        
+        // Show up to 6 games
+        const gamesToShow = data.games.slice(0, 6);
+        
+        for (const gameId of gamesToShow) {
+            const gameCard = document.createElement('div');
+            gameCard.className = 'game-card';
+            gameCard.innerHTML = `
+                <div class="game-icon">
+                    <i class="${gameIcons[gameId] || 'fas fa-gamepad'}"></i>
+                </div>
+                <div class="game-name">${gameNames[gameId] || gameId}</div>
+                <div class="game-action">
+                    <button class="game-select-btn" data-game="${gameId}">
+                        <i class="fas fa-search"></i> Search Players
+                    </button>
+                </div>
+            `;
+            
+            // Add click listener to game card
+            gameCard.addEventListener('click', () => {
+                selectGameAndNavigate(gameId);
+            });
+            
+            homeGameGrid.appendChild(gameCard);
+        }
+    } catch (error) {
+        console.error('Error loading featured games:', error);
+    }
+}
+
+function selectGameAndNavigate(gameId) {
+    // Set the current game
+    currentGame = gameId;
+    
+    // Navigate to main page
+    showMainPage();
+    
+    // Load the games first, then trigger game selection to load data
+    loadAvailableGames().then(() => {
+        selectGame(gameId);
+    });
+}
+
+async function performHeroSearch() {
+    const heroPlayerSearch = document.getElementById('heroPlayerSearch');
+    const heroGameSelect = document.getElementById('heroGameSelect');
+    
+    if (!heroPlayerSearch || !heroGameSelect) return;
+    
+    const searchTerm = heroPlayerSearch.value.trim();
+    const selectedGame = heroGameSelect.value;
+    
+    if (!searchTerm || !selectedGame) {
+        showMessage('Please enter a player name and select a game', 'error');
+        return;
+    }
+    
+    // Set the current game
+    currentGame = selectedGame;
+    
+    // Navigate to main page
+    showMainPage();
+    
+    // Set search term and perform search
+    const playerNameSearch = document.getElementById('playerNameSearch');
+    if (playerNameSearch) {
+        playerNameSearch.value = searchTerm;
+        // Trigger the search
+        setTimeout(() => performQuickSearch(), 100);
+    }
+}
+
 async function onGameSelect() {
-    const gameId = gameSelect.value;
+    const gameId = currentGame;
     
     if (!gameId) {
         hideAllSections();
-        fetchDataBtn.disabled = true;
         return;
     }
-
-    fetchDataBtn.disabled = false;
-    currentGame = gameId;
     
     // Try to load existing data
     try {
@@ -222,7 +463,7 @@ async function onGameSelect() {
             // No data available
             gameInfo.innerHTML = `
                 <h3>⚠️ No data available for this game</h3>
-                <p>Click "Fetch Fresh Data" to download the latest rankings from Fightcade.</p>
+                <p>Game data needs to be loaded by an administrator.</p>
             `;
             gameInfo.className = 'game-info';
             gameInfo.classList.remove('hidden');
@@ -234,49 +475,6 @@ async function onGameSelect() {
     }
 }
 
-async function fetchGameData() {
-    if (!currentGame) return;
-
-    const gameNames = {
-        'sfiii3nr1': 'Street Fighter III: 3rd Strike',
-        'sfa3': 'Street Fighter Alpha 3',
-        'sf2ce': 'Street Fighter II Champion Edition',
-        'kof98': 'King of Fighters 98',
-        'kof2002': 'King of Fighters 2002'
-    };
-
-    showLoading(true);
-    fetchDataBtn.disabled = true;
-    fetchDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
-
-    try {
-        const response = await fetch(`/api/games/${currentGame}/fetch`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                gameName: gameNames[currentGame] || currentGame
-            })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            // Reload game data
-            onGameSelect();
-        } else {
-            showMessage(`💥 Error: ${data.error}`, 'error');
-        }
-    } catch (error) {
-        console.error('Error fetching game data:', error);
-        showMessage('❌ Error fetching data from Fightcade', 'error');
-    }
-
-    showLoading(false);
-    fetchDataBtn.disabled = false;
-    fetchDataBtn.innerHTML = '<i class="fas fa-download"></i> Fetch Fresh Data';
-}
 
 function displayGameInfo(data) {
     const lastUpdate = new Date(data.lastUpdated).toLocaleString();
@@ -764,13 +962,29 @@ function closeMobileMenu() {
 }
 
 // Navigation Functions
+function showHomePage() {
+    currentView = 'home';
+    homePage.classList.remove('hidden');
+    statsPage.classList.add('hidden');
+    mainPage.classList.add('hidden');
+    localScenePage.classList.add('hidden');
+    
+    // Update nav buttons
+    homePageBtn.classList.add('active');
+    statsPageBtn.classList.remove('active');
+    mainPageBtn.classList.remove('active');
+    localSceneBtn.classList.remove('active');
+}
+
 function showStatsPage() {
     currentView = 'stats';
+    homePage.classList.add('hidden');
     statsPage.classList.remove('hidden');
     mainPage.classList.add('hidden');
     localScenePage.classList.add('hidden');
     
     // Update nav buttons
+    homePageBtn.classList.remove('active');
     statsPageBtn.classList.add('active');
     mainPageBtn.classList.remove('active');
     localSceneBtn.classList.remove('active');
@@ -778,11 +992,13 @@ function showStatsPage() {
 
 function showMainPage() {
     currentView = 'main';
+    homePage.classList.add('hidden');
     statsPage.classList.add('hidden');
     mainPage.classList.remove('hidden');
     localScenePage.classList.add('hidden');
     
     // Update nav buttons
+    homePageBtn.classList.remove('active');
     statsPageBtn.classList.remove('active');
     mainPageBtn.classList.add('active');
     localSceneBtn.classList.remove('active');
@@ -790,11 +1006,13 @@ function showMainPage() {
 
 function showLocalScenePage() {
     currentView = 'localScene';
+    homePage.classList.add('hidden');
     statsPage.classList.add('hidden');
     mainPage.classList.add('hidden');
     localScenePage.classList.remove('hidden');
     
     // Update nav buttons
+    homePageBtn.classList.remove('active');
     statsPageBtn.classList.remove('active');
     mainPageBtn.classList.remove('active');
     localSceneBtn.classList.add('active');

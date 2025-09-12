@@ -19,9 +19,6 @@ A powerful tool for extracting, indexing, and searching Fightcade player ranking
 - Street Fighter II Champion Edition (`sf2ce`)
 - King of Fighters 98 (`kof98`)
 - King of Fighters 2002 (`kof2002`)
-- Guilty Gear XX Accent Core Plus R (`ggxxacpr`)
-- Vampire Savior (`vsav`)
-- JoJo's Bizarre Adventure: Heritage for the Future (`jojoba`)
 
 ## 🚀 Quick Start
 
