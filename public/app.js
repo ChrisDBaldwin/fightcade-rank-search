@@ -12,9 +12,7 @@ let rankChart = null;
 let countryChart = null;
 
 // DOM elements
-const gameSelect = document.getElementById('gameSelect');
-const fetchDataBtn = document.getElementById('fetchDataBtn');
-const refreshGamesBtn = document.getElementById('refreshGamesBtn');
+const gameCardsContainer = document.getElementById('gameCardsContainer');
 const gameInfo = document.getElementById('gameInfo');
 const searchSection = document.getElementById('searchSection');
 const resultsSection = document.getElementById('resultsSection');
@@ -114,10 +112,7 @@ function initializeEventListeners() {
         });
     });
     
-    // Game selection
-    gameSelect.addEventListener('change', onGameSelect);
-    fetchDataBtn.addEventListener('click', fetchGameData);
-    refreshGamesBtn.addEventListener('click', loadAvailableGames);
+    // Game selection - no longer needed since we'll use click events on cards
     
     // Scenes
     sceneSelect.addEventListener('change', onSceneSelect);
@@ -168,40 +163,91 @@ async function loadAvailableGames() {
         const response = await fetch('/api/games');
         const data = await response.json();
         
-        // Clear and populate game select
-        gameSelect.innerHTML = '<option value="">Select a game...</option>';
+        // Clear and populate game cards
+        gameCardsContainer.innerHTML = '';
         
-        // Popular games with display names
+        // Popular games with display names and icons
         const gameNames = {
             'sfiii3nr1': 'Street Fighter III: 3rd Strike',
             'sfa3': 'Street Fighter Alpha 3',
             'sf2ce': 'Street Fighter II Champion Edition',
             'kof98': 'King of Fighters 98',
-            'kof2002': 'King of Fighters 2002'
+            'kof2002': 'King of Fighters 2002',
+            'ggxxacpr': 'Guilty Gear XX Accent Core Plus R',
+            'vsav': 'Vampire Savior',
+            'jojoba': "JoJo's Bizarre Adventure"
+        };
+
+        const gameIcons = {
+            'sfiii3nr1': 'fas fa-fist-raised',
+            'sfa3': 'fas fa-fire',
+            'sf2ce': 'fas fa-bolt',
+            'kof98': 'fas fa-crown',
+            'kof2002': 'fas fa-star',
+            'ggxxacpr': 'fas fa-sword',
+            'vsav': 'fas fa-moon',
+            'jojoba': 'fas fa-gem'
         };
         
-        data.games.forEach(gameId => {
-            const option = document.createElement('option');
-            option.value = gameId;
-            option.textContent = gameNames[gameId] || gameId;
-            gameSelect.appendChild(option);
-        });
-
-        // Set Street Fighter III: 3rd Strike as default if available
-        if (data.games.includes('sfiii3nr1')) {
-            gameSelect.value = 'sfiii3nr1';
-            // Trigger the change event to enable the fetch button
-            gameSelect.dispatchEvent(new Event('change'));
+        if (data.games.length === 0) {
+            gameCardsContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-gamepad" style="font-size: 3rem; color: #4299e1; margin-bottom: 20px;"></i>
+                    <h3>No Games Available</h3>
+                    <p>Game data needs to be loaded by an administrator.</p>
+                </div>
+            `;
+            return;
         }
 
-        if (data.games.length === 0) {
-            gameSelect.innerHTML = '<option value="">No games available - fetch some data first!</option>';
+        data.games.forEach(gameId => {
+            const gameCard = document.createElement('div');
+            gameCard.className = 'game-card-main';
+            gameCard.innerHTML = `
+                <div class="game-card-icon">
+                    <i class="${gameIcons[gameId] || 'fas fa-gamepad'}"></i>
+                </div>
+                <div class="game-card-name">${gameNames[gameId] || gameId}</div>
+                <div class="game-card-action">
+                    <button class="game-card-btn" data-game="${gameId}">
+                        <i class="fas fa-play"></i> Select Game
+                    </button>
+                </div>
+            `;
+            
+            // Add click listener to game card
+            gameCard.addEventListener('click', () => {
+                selectGame(gameId);
+            });
+            
+            gameCardsContainer.appendChild(gameCard);
+        });
+
+        // Auto-select Street Fighter III: 3rd Strike if available
+        if (data.games.includes('sfiii3nr1')) {
+            selectGame('sfiii3nr1');
         }
     } catch (error) {
         console.error('Error loading games:', error);
         showMessage('Error loading available games', 'error');
     }
     showLoading(false);
+}
+
+function selectGame(gameId) {
+    currentGame = gameId;
+    
+    // Update visual selection
+    const allCards = gameCardsContainer.querySelectorAll('.game-card-main');
+    allCards.forEach(card => card.classList.remove('selected'));
+    
+    const selectedCard = gameCardsContainer.querySelector(`[data-game="${gameId}"]`)?.closest('.game-card-main');
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
+    }
+    
+    // Load game data
+    onGameSelect();
 }
 
 // Homepage Functions
@@ -355,15 +401,16 @@ async function loadFeaturedGames() {
 }
 
 function selectGameAndNavigate(gameId) {
-    // Set the game in the main game selector
-    gameSelect.value = gameId;
+    // Set the current game
     currentGame = gameId;
     
     // Navigate to main page
     showMainPage();
     
-    // Trigger game selection to load data
-    onGameSelect();
+    // Load the games first, then trigger game selection to load data
+    loadAvailableGames().then(() => {
+        selectGame(gameId);
+    });
 }
 
 async function performHeroSearch() {
@@ -380,8 +427,7 @@ async function performHeroSearch() {
         return;
     }
     
-    // Set the game and search term in main page
-    gameSelect.value = selectedGame;
+    // Set the current game
     currentGame = selectedGame;
     
     // Navigate to main page
@@ -397,16 +443,12 @@ async function performHeroSearch() {
 }
 
 async function onGameSelect() {
-    const gameId = gameSelect.value;
+    const gameId = currentGame;
     
     if (!gameId) {
         hideAllSections();
-        fetchDataBtn.disabled = true;
         return;
     }
-
-    fetchDataBtn.disabled = false;
-    currentGame = gameId;
     
     // Try to load existing data
     try {
@@ -421,7 +463,7 @@ async function onGameSelect() {
             // No data available
             gameInfo.innerHTML = `
                 <h3>⚠️ No data available for this game</h3>
-                <p>Click "Fetch Fresh Data" to download the latest rankings from Fightcade.</p>
+                <p>Game data needs to be loaded by an administrator.</p>
             `;
             gameInfo.className = 'game-info';
             gameInfo.classList.remove('hidden');
@@ -433,49 +475,6 @@ async function onGameSelect() {
     }
 }
 
-async function fetchGameData() {
-    if (!currentGame) return;
-
-    const gameNames = {
-        'sfiii3nr1': 'Street Fighter III: 3rd Strike',
-        'sfa3': 'Street Fighter Alpha 3',
-        'sf2ce': 'Street Fighter II Champion Edition',
-        'kof98': 'King of Fighters 98',
-        'kof2002': 'King of Fighters 2002'
-    };
-
-    showLoading(true);
-    fetchDataBtn.disabled = true;
-    fetchDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
-
-    try {
-        const response = await fetch(`/api/games/${currentGame}/fetch`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                gameName: gameNames[currentGame] || currentGame
-            })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            // Reload game data
-            onGameSelect();
-        } else {
-            showMessage(`💥 Error: ${data.error}`, 'error');
-        }
-    } catch (error) {
-        console.error('Error fetching game data:', error);
-        showMessage('❌ Error fetching data from Fightcade', 'error');
-    }
-
-    showLoading(false);
-    fetchDataBtn.disabled = false;
-    fetchDataBtn.innerHTML = '<i class="fas fa-download"></i> Fetch Fresh Data';
-}
 
 function displayGameInfo(data) {
     const lastUpdate = new Date(data.lastUpdated).toLocaleString();

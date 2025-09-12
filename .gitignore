@@ -31,7 +31,3 @@ data/*.json
 # Logs
 logs
 *.log
-
-# docker files
-docker-compose.yml
-Dockerfile

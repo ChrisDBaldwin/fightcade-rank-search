@@ -70,28 +70,6 @@ app.get('/api/games', async (req, res) => {
   }
 });
 
-// Fetch fresh data for a specific game
-app.post('/api/games/:gameId/fetch', async (req, res) => {
-  const { gameId } = req.params;
-  const { gameName } = req.body;
-  
-  try {
-    console.log(`🔄 Fetching fresh data for ${gameId}...`);
-    const gameData = await dataFetcher.fetchRankings(gameId, gameName || gameId);
-    res.json({ 
-      message: `Successfully fetched ${gameData.totalPlayers} players`,
-      gameData: {
-        gameId: gameData.gameId,
-        gameName: gameData.gameName,
-        totalPlayers: gameData.totalPlayers,
-        lastUpdated: gameData.lastUpdated
-      }
-    });
-  } catch (error) {
-    console.error(`Error fetching data for ${gameId}:`, error);
-    res.status(500).json({ error: `Failed to fetch data for ${gameId}` });
-  }
-});
 
 // Get game data and stats
 app.get('/api/games/:gameId', async (req, res) => {
