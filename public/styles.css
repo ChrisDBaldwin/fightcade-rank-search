@@ -782,29 +782,34 @@ section h2 i {
 }
 
 .game-stats .stat-card {
-    background: #f7fafc;
+    background: linear-gradient(135deg, rgba(45, 55, 72, 0.95) 0%, rgba(74, 85, 104, 0.95) 100%);
     padding: 20px;
     border-radius: 12px;
     text-align: center;
-    border: 1px solid #e2e8f0;
-    transition: transform 0.3s ease;
+    border: 2px solid #718096;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .game-stats .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px rgba(66, 153, 225, 0.3);
+    border-color: #4299e1;
 }
 
 .stat-value {
     font-size: 2rem;
     font-weight: bold;
-    color: #667eea;
+    color: #f56565;
     margin-bottom: 5px;
+    text-shadow: 0 0 8px rgba(245, 101, 101, 0.5);
 }
 
 .stat-label {
-    color: #4a5568;
+    color: #cbd5e0;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* Pagination */
