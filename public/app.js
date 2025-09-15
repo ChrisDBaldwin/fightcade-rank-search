@@ -134,18 +134,7 @@ function initializeEventListeners() {
     clearFiltersBtn.addEventListener('click', clearFilters);
     pageSizeSelect.addEventListener('change', onPageSizeChange);
 
-    // Enter key support for filter inputs
-    const filterInputs = ['minElo', 'maxElo'];
-    filterInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    applyFilters();
-                }
-            });
-        }
-    });
+    // Enter key support for filter inputs - removed power level inputs
 
     // Rank tier filter changes
     const minRankTier = document.getElementById('minRankTier');
@@ -575,7 +564,7 @@ function getRankTierColor(tier) {
 function applyFilters() {
     const minRankTier = document.getElementById('minRankTier').value;
     const maxRankTier = document.getElementById('maxRankTier').value;
-    
+
     // Convert rank tiers to ELO ranges
     let minEloFromTier, maxEloFromTier;
     if (minRankTier) {
@@ -584,29 +573,14 @@ function applyFilters() {
     if (maxRankTier) {
         maxEloFromTier = rankTierToElo[maxRankTier].max;
     }
-    
-    // Combine manual ELO inputs with tier-based ELO
-    const manualMinElo = parseFloat(document.getElementById('minElo').value);
-    const manualMaxElo = parseFloat(document.getElementById('maxElo').value);
-    
-    const finalMinElo = Math.max(
-        manualMinElo || 0,
-        minEloFromTier || 0
-    ) || undefined;
-    
-    const finalMaxElo = Math.min(
-        manualMaxElo || 9999,
-        maxEloFromTier || 9999
-    );
-    const finalMaxEloValue = finalMaxElo === 9999 ? undefined : finalMaxElo;
-    
+
     currentFilters = {
         name: playerNameSearch.value.trim() || undefined,
-        minElo: finalMinElo,
-        maxElo: finalMaxEloValue,
+        minElo: minEloFromTier,
+        maxElo: maxEloFromTier,
         country: countryFilter.value.trim() || undefined,
     };
-    
+
     currentPage = 1;
     performSearch();
 }
@@ -614,12 +588,10 @@ function applyFilters() {
 function clearFilters() {
     // Clear all filter inputs
     playerNameSearch.value = '';
-    document.getElementById('minElo').value = '';
-    document.getElementById('maxElo').value = '';
     document.getElementById('minRankTier').value = '';
     document.getElementById('maxRankTier').value = '';
     countryFilter.value = '';
-    
+
     currentFilters = {};
     currentPage = 1;
     performSearch();

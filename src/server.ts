@@ -101,12 +101,12 @@ app.get('/api/games/:gameId', async (req, res) => {
 // Search players
 app.get('/api/games/:gameId/search', async (req, res) => {
   const { gameId } = req.params;
-  const { 
-    name, 
-    minElo, 
-    maxElo, 
-    minRank, 
-    maxRank, 
+  const {
+    name,
+    minElo,
+    maxElo,
+    minRank,
+    maxRank,
     country,
     page = '1',
     pageSize = '50'
