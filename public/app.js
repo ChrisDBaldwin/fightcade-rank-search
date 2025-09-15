@@ -715,59 +715,77 @@ function displayResults(data) {
 
 function displayPagination(currentPage, totalPages, totalCount) {
     const pagination = document.getElementById('pagination');
-    
-    let paginationHTML = '';
-    
+
+    // Clear existing content
+    pagination.innerHTML = '';
+
     // Previous button
-    paginationHTML += `
-        <button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-    `;
-    
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+    prevButton.disabled = currentPage === 1;
+    if (!prevButton.disabled) {
+        prevButton.addEventListener('click', () => goToPage(currentPage - 1));
+    }
+    pagination.appendChild(prevButton);
+
     // Page numbers
     const startPage = Math.max(1, currentPage - 2);
     const endPage = Math.min(totalPages, currentPage + 2);
-    
+
     if (startPage > 1) {
-        paginationHTML += `<button onclick="goToPage(1)">1</button>`;
+        const firstPageButton = document.createElement('button');
+        firstPageButton.textContent = '1';
+        firstPageButton.addEventListener('click', () => goToPage(1));
+        pagination.appendChild(firstPageButton);
+
         if (startPage > 2) {
-            paginationHTML += `<span>...</span>`;
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pagination.appendChild(ellipsis);
         }
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-            <button onclick="goToPage(${i})" ${i === currentPage ? 'class="active"' : ''}>
-                ${i}
-            </button>
-        `;
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        if (i === currentPage) {
+            pageButton.className = 'active';
+        } else {
+            pageButton.addEventListener('click', () => goToPage(i));
+        }
+        pagination.appendChild(pageButton);
     }
-    
+
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
-            paginationHTML += `<span>...</span>`;
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pagination.appendChild(ellipsis);
         }
-        paginationHTML += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+
+        const lastPageButton = document.createElement('button');
+        lastPageButton.textContent = totalPages;
+        lastPageButton.addEventListener('click', () => goToPage(totalPages));
+        pagination.appendChild(lastPageButton);
     }
-    
+
     // Next button
-    paginationHTML += `
-        <button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
-    `;
-    
+    const nextButton = document.createElement('button');
+    nextButton.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+    nextButton.disabled = currentPage === totalPages;
+    if (!nextButton.disabled) {
+        nextButton.addEventListener('click', () => goToPage(currentPage + 1));
+    }
+    pagination.appendChild(nextButton);
+
     // Page info
     const startItem = (currentPage - 1) * currentPageSize + 1;
     const endItem = Math.min(currentPage * currentPageSize, totalCount);
-    paginationHTML += `
-        <span class="pagination-info">
-            Showing ${startItem.toLocaleString()}-${endItem.toLocaleString()} of ${totalCount.toLocaleString()}
-        </span>
-    `;
-    
-    pagination.innerHTML = paginationHTML;
+    const pageInfo = document.createElement('span');
+    pageInfo.className = 'pagination-info';
+    pageInfo.textContent = `Showing ${startItem.toLocaleString()}-${endItem.toLocaleString()} of ${totalCount.toLocaleString()}`;
+    pagination.appendChild(pageInfo);
+
     pagination.classList.remove('hidden');
 }
 
