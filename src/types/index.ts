@@ -26,6 +26,8 @@ export interface SearchFilters {
   minRank?: number;
   maxRank?: number;
   country?: string;
+  minMatches?: number;
+  maxMatches?: number;
 }
 
 export interface SearchResult {

@@ -33,6 +33,13 @@ export class SearchService {
       filteredPlayers = filteredPlayers.filter(player => player.rank <= filters.maxRank!);
     }
 
+    // Apply matches filters
+    if (filters.minMatches !== undefined) {
+      filteredPlayers = filteredPlayers.filter(player => player.totalMatches >= filters.minMatches!);
+    }
+    if (filters.maxMatches !== undefined) {
+      filteredPlayers = filteredPlayers.filter(player => player.totalMatches <= filters.maxMatches!);
+    }
 
     // Apply country filter (case-insensitive)
     if (filters.country) {

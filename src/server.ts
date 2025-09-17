@@ -108,6 +108,8 @@ app.get('/api/games/:gameId/search', async (req, res) => {
     minRank,
     maxRank,
     country,
+    minMatches,
+    maxMatches,
     page = '1',
     pageSize = '50'
   } = req.query;
@@ -126,6 +128,8 @@ app.get('/api/games/:gameId/search', async (req, res) => {
       minRank: minRank ? parseInt(minRank as string) : undefined,
       maxRank: maxRank ? parseInt(maxRank as string) : undefined,
       country: country as string,
+      minMatches: minMatches ? parseInt(minMatches as string) : undefined,
+      maxMatches: maxMatches ? parseInt(maxMatches as string) : undefined,
     };
 
     const result = searchService.searchPlayers(

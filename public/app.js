@@ -142,6 +142,12 @@ function initializeEventListeners() {
     if (minRankTier) minRankTier.addEventListener('change', applyFilters);
     if (maxRankTier) maxRankTier.addEventListener('change', applyFilters);
 
+    // Match count filter changes
+    const minMatches = document.getElementById('minMatches');
+    const maxMatches = document.getElementById('maxMatches');
+    if (minMatches) minMatches.addEventListener('input', applyFilters);
+    if (maxMatches) maxMatches.addEventListener('input', applyFilters);
+
     // Country filter change
     countryFilter.addEventListener('change', applyFilters);
 }
@@ -564,6 +570,8 @@ function getRankTierColor(tier) {
 function applyFilters() {
     const minRankTier = document.getElementById('minRankTier').value;
     const maxRankTier = document.getElementById('maxRankTier').value;
+    const minMatches = document.getElementById('minMatches').value;
+    const maxMatches = document.getElementById('maxMatches').value;
 
     // Convert rank tiers to ELO ranges
     let minEloFromTier, maxEloFromTier;
@@ -579,6 +587,8 @@ function applyFilters() {
         minElo: minEloFromTier,
         maxElo: maxEloFromTier,
         country: countryFilter.value.trim() || undefined,
+        minMatches: minMatches ? parseInt(minMatches) : undefined,
+        maxMatches: maxMatches ? parseInt(maxMatches) : undefined,
     };
 
     currentPage = 1;
@@ -590,6 +600,8 @@ function clearFilters() {
     playerNameSearch.value = '';
     document.getElementById('minRankTier').value = '';
     document.getElementById('maxRankTier').value = '';
+    document.getElementById('minMatches').value = '';
+    document.getElementById('maxMatches').value = '';
     countryFilter.value = '';
 
     currentFilters = {};
