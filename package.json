@@ -5,8 +5,8 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "start": "node -r ./instrumentation.js dist/server.js",
+    "dev": "NODE_OPTIONS='-r ./instrumentation.js' ts-node-dev --respawn --transpile-only src/server.ts",
     "fetch-data": "ts-node src/scripts/fetchRankings.ts",
     "type-check": "tsc --noEmit"
   },
@@ -14,11 +14,24 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.43.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.49.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.49.1",
+    "@opentelemetry/instrumentation": "^0.49.1",
+    "@opentelemetry/instrumentation-express": "^0.38.0",
+    "@opentelemetry/instrumentation-http": "^0.49.1",
+    "@opentelemetry/resources": "^1.22.0",
+    "@opentelemetry/sdk-metrics": "^1.22.0",
+    "@opentelemetry/sdk-node": "^0.49.1",
+    "@opentelemetry/sdk-trace-base": "^1.22.0",
+    "@opentelemetry/sdk-trace-node": "^1.22.0",
+    "@opentelemetry/semantic-conventions": "^1.22.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "fightcade-api": "^1.0.0",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "compression": "^1.7.4"
+    "helmet": "^7.1.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
