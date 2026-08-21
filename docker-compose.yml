@@ -1,6 +1,11 @@
 services:
+  # Serves the site from the cached JSON snapshots. Read-only path — it never
+  # talks to Fightcade, so it stays up even if Cloudflare blocks the updater.
   fc-rank-search:
-    build: .
+    build:
+      context: .
+      target: web
+    image: fc-rank-search:web
     container_name: fc-rank-search-app
     restart: unless-stopped
     ports:
@@ -14,7 +19,7 @@ services:
       # Optional: Mount logs directory
       - ./logs:/app/logs
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -25,10 +30,34 @@ services:
     labels:
       # Labels for reverse proxy (adjust domain as needed)
       - "traefik.enable=true"
-      - "traefik.http.routers.fc-rank-search.rule=Host(`fc-rank.voidtalker.com`)"
+      - "traefik.http.routers.fc-rank-search.rule=Host(`fightcade.voidtalker.com`)"
       - "traefik.http.routers.fc-rank-search.entrypoints=websecure"
       - "traefik.http.routers.fc-rank-search.tls.certresolver=letsencrypt"
       - "traefik.http.services.fc-rank-search.loadbalancer.server.port=3000"
+
+  # Refreshes the rankings once a day. Ships Chrome + Xvfb because earning a
+  # Cloudflare clearance needs a headed browser; writes into the same volume
+  # the web service reads.
+  fc-rank-updater:
+    build:
+      context: .
+      target: updater
+    image: fc-rank-search:updater
+    container_name: fc-rank-search-updater
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      # Hour (UTC) of the daily refresh
+      - FC_UPDATE_HOUR=4
+      # Refresh on boot if the newest snapshot is older than this many hours
+      - FC_STALE_HOURS=36
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    # Chrome needs more than Docker's default 64MB of shared memory
+    shm_size: 1gb
+    networks:
+      - default
 
 networks:
   web:

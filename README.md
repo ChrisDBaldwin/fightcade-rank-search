@@ -24,9 +24,37 @@ A powerful tool for extracting, indexing, and searching Fightcade player ranking
 
 ### Prerequisites
 
-- **Windows with WSL** (Windows Subsystem for Linux) or Linux/macOS
-- Node.js 16+ and npm
+- Node.js 20+ and npm
+- **Google Chrome** installed locally (see "Cloudflare access" below — it's how we
+  get past the challenge; on Linux you also need Xvfb)
 - Internet connection for fetching data
+
+### Cloudflare access (read this first)
+
+Fightcade's API sits behind a Cloudflare managed challenge. A plain HTTP request
+gets a `403` with a "Just a moment..." page. Two things get you through:
+
+1. A `cf_clearance` cookie, and
+2. the **exact** User-Agent of the browser that earned it.
+
+That's all — no TLS impersonation or proxy service required. Once you hold both,
+ordinary `fetch()` from Node works fine, and the cookie is nominally good for a
+year.
+
+Earning the cookie is the fiddly part. It needs a **headed** browser: headless
+Chrome gets detected and re-challenged even when a valid cookie is already in
+its profile. So `npm run refresh-clearance` drives a real Chrome window, waits
+out the challenge, verifies it with a live API call, and stores the result in
+`data/.clearance.json`.
+
+```bash
+npm run refresh-clearance
+```
+
+Treat `data/.clearance.json` as a credential — it's gitignored, keep it that way.
+
+Everything after that is automatic: if the API ever answers `403`, the client
+earns a new clearance and retries the request once.
 
 ### Installation
 
@@ -37,27 +65,23 @@ cd fc-rank-search
 npm install
 ```
 
-2. **Fetch game data** (e.g., Street Fighter III: 3rd Strike):
+2. **Earn a Cloudflare clearance** (opens a Chrome window briefly):
 ```bash
-# On Windows, use WSL:
-wsl npm run fetch-data sfiii3nr1
-
-# On Linux/macOS:
-npm run fetch-data sfiii3nr1
+npm run refresh-clearance
 ```
 
-3. **Start the server**:
+3. **Fetch game data**:
 ```bash
-# On Windows, use WSL:
-wsl npm run dev
+npm run fetch-data sfiii3nr1   # one game
+npm run update-all             # every game in src/config/games.ts
+```
 
-# On Linux/macOS:
+4. **Start the server**:
+```bash
 npm run dev
 ```
 
-4. **Open your browser** and go to `http://localhost:3000`
-
-That's it! 🎉 You can now search through **thousands** of player rankings instantly.
+5. **Open your browser** and go to `http://localhost:3000`
 
 ### 🐳 Docker Installation (Alternative)
 
@@ -67,8 +91,13 @@ For easier deployment, you can use Docker:
 ```bash
 git clone <repository-url>
 cd fc-rank-search
-docker-compose up -d
+docker compose up -d
 ```
+
+This brings up two services: the web server, and an updater that refreshes the
+rankings daily. See [DEPLOYMENT.md](DEPLOYMENT.md) for the full server guide —
+**including the one step you must verify by hand**, since earning a Cloudflare
+clearance needs a headed Chrome and is not yet proven on Linux.
 
 **Or build and run manually**:
 ```bash
@@ -115,19 +144,21 @@ npm run fetch-data all
 npm run fetch-data
 ```
 
-### 🚀 Getting More Players
+### Keeping data fresh
 
-Due to Fightcade's API rate limits, you can fetch ~6,700 players per session. To get more:
+`npm run update-all` refreshes every game listed in `src/config/games.ts`. In
+Docker this runs on a daily schedule by itself (see Deployment).
 
-1. **Wait and re-fetch**: Run the fetch command again after a few minutes
-2. **Multiple sessions**: The tool automatically saves progress and continues where it left off
-3. **Total available**: Up to 35,396 players are available for Street Fighter III: 3rd Strike!
+A full crawl pages through the rankings 100 players at a time, so a transient
+`503` partway through used to truncate the results. The client now retries with
+exponential backoff, and a crawl that still ends early will **not** overwrite a
+larger existing snapshot — you keep yesterday's good data instead of today's
+partial data.
+
+Check freshness at any time:
 
 ```bash
-# Run multiple times to get more players
-wsl npm run fetch-data sfiii3nr1  # Gets ~6,700 players
-# Wait 5-10 minutes...
-wsl npm run fetch-data sfiii3nr1  # Gets more players, continuing from where it left off
+curl http://localhost:3000/api/status
 ```
 
 ### Using the Web Interface
@@ -196,9 +227,11 @@ fc-rank-search/
 ```bash
 npm run dev          # Start development server with hot reload
 npm run build        # Build TypeScript to JavaScript
-npm run start        # Start production server
-npm run fetch-data   # Fetch rankings data
-npm run type-check   # Check TypeScript types
+npm run start              # Start production server
+npm run fetch-data <game>  # Fetch one game's rankings
+npm run update-all         # Refresh every game in src/config/games.ts
+npm run refresh-clearance  # Earn a new Cloudflare clearance (opens Chrome)
+npm run type-check         # Check TypeScript types
 ```
 
 ### Adding New Games

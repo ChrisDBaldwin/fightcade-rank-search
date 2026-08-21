@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+.git
+.gitignore
+# Never bake the clearance cookie or browser profile into an image
+data
+logs
+*.log
+.env*
+.vscode
+.idea
+.DS_Store

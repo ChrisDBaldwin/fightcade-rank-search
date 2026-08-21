@@ -31,3 +31,7 @@ data/*.json
 # Logs
 logs
 *.log
+
+# Cloudflare clearance + browser profile (credentials — never commit)
+data/.clearance.json
+data/.browser-profile/

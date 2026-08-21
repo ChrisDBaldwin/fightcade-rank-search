@@ -1,15 +1,7 @@
 #!/usr/bin/env ts-node
 
 import { DataFetcher } from '../services/dataFetcher';
-
-// Popular Fightcade games with their IDs
-const POPULAR_GAMES = {
-  'sfiii3nr1': 'Street Fighter III: 3rd Strike',
-  'sfa3': 'Street Fighter Alpha 3',
-  'sf2ce': 'Street Fighter II Champion Edition',
-  'kof98': 'King of Fighters 98',
-  'kof2002': 'King of Fighters 2002'
-};
+import { GAMES as POPULAR_GAMES } from '../config/games';
 
 async function main() {
   const args = process.argv.slice(2);

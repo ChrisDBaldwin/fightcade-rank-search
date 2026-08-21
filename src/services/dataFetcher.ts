@@ -1,14 +1,16 @@
-import { GetRankings } from 'fightcade-api';
 import { FightcadeApiDirect } from './fightcadeApiDirect';
 import { Player, GameData } from '../types';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export class DataFetcher {
+  /** How much of an existing snapshot an incomplete crawl must match to replace it. */
+  private readonly MIN_RETAINED_FRACTION = 0.95;
+
   private dataDir: string;
 
   constructor() {
-    this.dataDir = path.join(process.cwd(), 'data');
+    this.dataDir = process.env.FC_DATA_DIR || path.join(process.cwd(), 'data');
     this.ensureDataDirectory();
   }
 
@@ -22,25 +24,26 @@ export class DataFetcher {
     return path.join(this.dataDir, `${gameId}-rankings.json`);
   }
 
-  async fetchRankings(gameId: string, gameName: string, useExtendedFetch: boolean = true): Promise<GameData> {
+  async fetchRankings(gameId: string, gameName: string): Promise<GameData> {
     console.log(`🎮 Fetching rankings for ${gameName} (${gameId})...`);
-    
+
     try {
-      let rankings: any[];
-      let totalCount: number;
+      const { players: rankings, totalCount, complete } = await FightcadeApiDirect.getAllRankings(gameId, 100000);
 
-      if (useExtendedFetch) {
-        console.log('🚀 Using extended fetch to get ALL players from ALL tiers...');
-        const result = await FightcadeApiDirect.getAllRankings(gameId, 100000);
-        rankings = result.players;
-        totalCount = result.totalCount;
-      } else {
-        console.log('📦 Using standard API (limited to ~15 players)...');
-        rankings = await GetRankings(gameId);
-        totalCount = rankings.length;
+      console.log(`✅ Fetched ${rankings.length} players${complete ? '' : ' (crawl ended early)'}`);
+
+      // A transient API error mid-crawl used to silently replace a full
+      // snapshot with a truncated one. Only accept a short result if the crawl
+      // actually finished, or if we have nothing better already on disk.
+      if (!complete) {
+        const existing = await this.loadGameData(gameId);
+        if (existing && rankings.length < existing.totalPlayers * this.MIN_RETAINED_FRACTION) {
+          throw new Error(
+            `Incomplete crawl returned ${rankings.length} players vs ${existing.totalPlayers} already stored — ` +
+            'keeping the existing snapshot.'
+          );
+        }
       }
-
-      console.log(`✅ Successfully fetched ${rankings.length} players`);
 
       // Transform the data and add rank numbers
       // The Fightcade API returns Player objects with gameinfo containing stats
@@ -90,7 +93,12 @@ export class DataFetcher {
 
   async saveGameData(gameData: GameData): Promise<void> {
     const filePath = this.getDataFilePath(gameData.gameId);
-    await fs.promises.writeFile(filePath, JSON.stringify(gameData, null, 2));
+    const tempPath = `${filePath}.tmp`;
+
+    // Rename is atomic on the same filesystem, so readers see either the old
+    // snapshot or the new one — never a half-written file.
+    await fs.promises.writeFile(tempPath, JSON.stringify(gameData, null, 2));
+    await fs.promises.rename(tempPath, filePath);
   }
 
   async loadGameData(gameId: string): Promise<GameData | null> {

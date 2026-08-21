@@ -551,6 +551,37 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Per-game data freshness. The quickest way to confirm the daily updater is
+// actually running — every game should show an ageHours under ~24.
+app.get('/api/status', async (req, res) => {
+  try {
+    const gameIds = await dataFetcher.getAvailableGames();
+
+    const games = await Promise.all(
+      gameIds.map(async (gameId) => {
+        const data = await dataFetcher.loadGameData(gameId);
+        if (!data) return { gameId, available: false };
+
+        const ageHours = (Date.now() - new Date(data.lastUpdated).getTime()) / 3_600_000;
+        return {
+          gameId,
+          gameName: data.gameName,
+          available: true,
+          totalPlayers: data.totalPlayers,
+          lastUpdated: data.lastUpdated,
+          ageHours: Number(ageHours.toFixed(1)),
+          isStale: dataFetcher.isDataStale(data),
+        };
+      })
+    );
+
+    res.json({ timestamp: new Date().toISOString(), games });
+  } catch (error) {
+    console.error('Error building status report:', error);
+    res.status(500).json({ error: 'Failed to build status report' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 FC Rank Search server running on http://localhost:${PORT}`);
