@@ -4,9 +4,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export class DataFetcher {
-  /** How much of an existing snapshot an incomplete crawl must match to replace it. */
-  private readonly MIN_RETAINED_FRACTION = 0.95;
-
   private dataDir: string;
 
   constructor() {
@@ -24,7 +21,7 @@ export class DataFetcher {
     return path.join(this.dataDir, `${gameId}-rankings.json`);
   }
 
-  async fetchRankings(gameId: string, gameName: string): Promise<GameData> {
+  async fetchRankings(gameId: string, gameName: string, allowPartial: boolean = false): Promise<GameData> {
     console.log(`🎮 Fetching rankings for ${gameName} (${gameId})...`);
 
     try {
@@ -32,17 +29,22 @@ export class DataFetcher {
 
       console.log(`✅ Fetched ${rankings.length} players${complete ? '' : ' (crawl ended early)'}`);
 
-      // A transient API error mid-crawl used to silently replace a full
-      // snapshot with a truncated one. Only accept a short result if the crawl
-      // actually finished, or if we have nothing better already on disk.
-      if (!complete) {
+      // Never let a truncated crawl become the canonical snapshot. For a
+      // rankings site, partial data is worse than stale data: a crawl that
+      // died at offset 100 would otherwise be written as a 100-player game and
+      // then replicated to production.
+      //
+      // Checking only against an existing local file wasn't enough — on a
+      // machine with no prior snapshot there is nothing to compare against, so
+      // a 100-player result looked perfectly valid. Completeness is the test.
+      if (!complete && !allowPartial) {
         const existing = await this.loadGameData(gameId);
-        if (existing && rankings.length < existing.totalPlayers * this.MIN_RETAINED_FRACTION) {
-          throw new Error(
-            `Incomplete crawl returned ${rankings.length} players vs ${existing.totalPlayers} already stored — ` +
-            'keeping the existing snapshot.'
-          );
-        }
+        const comparison = existing ? ` (${existing.totalPlayers} currently stored)` : ' (no previous snapshot)';
+        throw new Error(
+          `Crawl for ${gameId} ended early with ${rankings.length} players${comparison}. ` +
+          'Refusing to save partial rankings — re-run when the API is healthy, ' +
+          'or pass allowPartial to override.'
+        );
       }
 
       // Transform the data and add rank numbers

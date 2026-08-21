@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Daily rankings refresh + upload.
+
+  Install as a LaunchAgent (NOT a LaunchDaemon): the fetch drives a headed
+  Chrome window, which needs a logged-in GUI session.
+
+    cp scripts/com.voidtalker.fcrank.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.voidtalker.fcrank.plist
+
+  Edit the two paths below if the repo lives somewhere else.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.voidtalker.fcrank</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/chris/git/fightcade-rank-search/scripts/daily-update.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/chris/git/fightcade-rank-search</string>
+
+    <!-- 05:00 local. If the Mac is asleep at that hour, launchd runs the job
+         once it wakes rather than skipping the day entirely. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>5</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/chris/git/fightcade-rank-search/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/chris/git/fightcade-rank-search/logs/launchd.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

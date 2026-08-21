@@ -35,10 +35,16 @@ services:
       - "traefik.http.routers.fc-rank-search.tls.certresolver=letsencrypt"
       - "traefik.http.services.fc-rank-search.loadbalancer.server.port=3000"
 
-  # Refreshes the rankings once a day. Ships Chrome + Xvfb because earning a
-  # Cloudflare clearance needs a headed browser; writes into the same volume
-  # the web service reads.
+  # Server-side daily refresh. DISABLED BY DEFAULT — it does not work on this
+  # host: earning a Cloudflare clearance needs a headed browser, and neither
+  # Debian's chromium (arm64) nor real Chrome under Xvfb (x86_64) gets past the
+  # challenge. Rankings are fetched on a desktop machine instead and copied up;
+  # see DEPLOYMENT.md and scripts/daily-update.sh.
+  #
+  # Kept here because it costs nothing and may start working again. To try it:
+  #   docker compose --profile updater up -d
   fc-rank-updater:
+    profiles: ["updater"]
     build:
       context: .
       target: updater

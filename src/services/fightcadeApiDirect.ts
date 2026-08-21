@@ -23,10 +23,13 @@ export class FightcadeApiDirect {
   /** Parallel user lookups to allow — bursts are what get a clearance re-scored. */
   private static readonly USER_CONCURRENCY = 4;
   /** Attempts per request before giving up, covering transient 5xx and network errors. */
-  private static readonly MAX_ATTEMPTS = 5;
-  private static readonly RETRY_BASE_MS = 2000;
-  /** Pause between ranking pages. Tunable because politeness is a judgement call. */
-  private static readonly BATCH_DELAY_MS = Number(process.env.FC_BATCH_DELAY_MS ?? 1000);
+  private static readonly MAX_ATTEMPTS = 6;
+  /** First backoff step. Grows to ~80s, because a 503 here means we're being
+   *  throttled and a couple of seconds is nowhere near long enough to recover. */
+  private static readonly RETRY_BASE_MS = 5000;
+  /** Pause between ranking pages. Crawling faster than this earned a sustained
+   *  503 storm and a revoked clearance, so err on the slow side. */
+  private static readonly BATCH_DELAY_MS = Number(process.env.FC_BATCH_DELAY_MS ?? 3000);
 
   /**
    * POST to the Fightcade API carrying our Cloudflare clearance.
@@ -43,9 +46,9 @@ export class FightcadeApiDirect {
 
     for (let attempt = 1; attempt <= this.MAX_ATTEMPTS; attempt++) {
       if (attempt > 1) {
-        // 2s, 4s, 8s, 16s — long enough for a blip to clear, short enough that
-        // a full crawl still finishes in one sitting.
-        const backoff = this.RETRY_BASE_MS * 2 ** (attempt - 2);
+        // 5s, 10s, 20s, 40s, 80s. Jittered so a retrying crawl doesn't settle
+        // into a fixed rhythm that looks exactly like the bot it is.
+        const backoff = Math.round(this.RETRY_BASE_MS * 2 ** (attempt - 2) * (0.75 + Math.random() * 0.5));
         console.warn(`⏳ ${lastError} — retrying in ${backoff / 1000}s (attempt ${attempt}/${this.MAX_ATTEMPTS})`);
         await new Promise((resolve) => setTimeout(resolve, backoff));
       }
@@ -276,8 +279,9 @@ export class FightcadeApiDirect {
 
         offset += batchSize;
         
-        // Stay polite between pages.
-        await new Promise(resolve => setTimeout(resolve, this.BATCH_DELAY_MS));
+        // Stay polite between pages, with jitter for the same reason.
+        const pause = Math.round(this.BATCH_DELAY_MS * (0.75 + Math.random() * 0.5));
+        await new Promise(resolve => setTimeout(resolve, pause));
       }
 
       // Final rank distribution summary

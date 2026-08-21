@@ -94,10 +94,14 @@ cd fc-rank-search
 docker compose up -d
 ```
 
-This brings up two services: the web server, and an updater that refreshes the
-rankings daily. See [DEPLOYMENT.md](DEPLOYMENT.md) for the full server guide —
-**including the one step you must verify by hand**, since earning a Cloudflare
-clearance needs a headed Chrome and is not yet proven on Linux.
+This starts the web server, which serves cached JSON and nothing else.
+
+**Rankings are fetched on a desktop machine, not the server.** Clearing
+Cloudflare's challenge needs a headed Chrome, which doesn't work on a headless
+Debian host (tested — see DEPLOYMENT.md). A desktop machine runs the crawl daily
+and uploads the JSON with `scripts/upload-to-server.sh`.
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full setup on both ends.
 
 **Or build and run manually**:
 ```bash
@@ -149,11 +153,16 @@ npm run fetch-data
 `npm run update-all` refreshes every game listed in `src/config/games.ts`. In
 Docker this runs on a daily schedule by itself (see Deployment).
 
-A full crawl pages through the rankings 100 players at a time, so a transient
-`503` partway through used to truncate the results. The client now retries with
-exponential backoff, and a crawl that still ends early will **not** overwrite a
-larger existing snapshot — you keep yesterday's good data instead of today's
-partial data.
+A full crawl is ~1000 requests across all games and takes roughly an hour, paced
+at one page per 3 seconds. Going faster earns a sustained `503` storm from
+Fightcade and gets the clearance revoked.
+
+Two rails protect the data, both added after the failures actually happened:
+
+- **A partial crawl is never saved.** If the API falters mid-crawl, the previous
+  snapshot survives untouched rather than being replaced by truncated results.
+- **The upload won't shrink production.** `scripts/upload-to-server.sh` rejects
+  any local file with under 90% of the deployed player count.
 
 Check freshness at any time:
 

@@ -10,7 +10,11 @@
 import { DataFetcher } from '../services/dataFetcher';
 import { GAMES } from '../config/games';
 
-const DELAY_BETWEEN_GAMES_MS = 5000;
+// A full run is ~1000 requests across all games. Crawling hard enough to
+// trip Fightcade's rate limit costs us the whole run (and briefly the
+// clearance), so pause meaningfully between games. A daily job has all the
+// time in the world.
+const DELAY_BETWEEN_GAMES_MS = Number(process.env.FC_GAME_DELAY_MS ?? 30_000);
 
 export interface UpdateSummary {
   updated: string[];
